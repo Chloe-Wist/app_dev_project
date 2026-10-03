@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<!--This is just a basic mock up, I haven't done navigation or the footer yet
+plus it looks ugly still. You can work on it on your own time if you wish
+- Jonathan -->
+<html>
+    <head>
+        <title>Login</title>
+        <style>
+            main {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            header {
+                display: flex;
+                align-items: center;
+            
+            }
+            nav {
+                display: flex;
+                gap: 20px;
+                margin-left: auto;
+            }
+            body {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            label {
+                display: block
+            }
+            button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            a {
+                display:flex;
+                margin-top:8px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h2>Hope Inspire Love</h2>
+
+            <nav>
+                <a href="#">Home</a>
+                <a href="#">About</a>
+            </nav>
+        </header>
+        <main>
+            <form>
+            <label for="Username">
+                Username
+            </label>
+            <input type="text" id="Username" name="Username" required>
+            <label for="Password">
+                Password
+            </label>
+            <input type="password" id="Password" name="Password" required>
+            <label for="Email">
+                Email
+            </label>
+            <input type="email" id="Email" name="Email" required>
+            <a href="#">Forgot Password?</a>
+            <button type="submit">Login</button>
+            </form>
+        </main>
+    
+        <footer>
+            
+        </footer>
+    </body>
+
+</html>
