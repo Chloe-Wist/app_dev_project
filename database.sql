@@ -23,8 +23,8 @@ create table if not exists Scheduling_Role (
 -- !: User table name changed to Users here
 create table if not exists Users (
 	User_ID int auto_increment primary key,
-    Sim_Role_ID int,
-    Schd_Role_ID int,
+    Sim_Role_ID int Not Null,
+    Schd_Role_ID int Not Null,
     First_Name Varchar(50) Not Null,
     Last_Name Varchar(50) Not Null,
     Email varchar(255) Not Null Unique,
@@ -69,7 +69,7 @@ Create table if not exists Industry (
 create table if not exists Sessions (
 	Session_ID int auto_increment Primary Key,
     Session_Name varchar(50) Not Null,
-    Created_By int,
+    Created_By int Not Null,
     Passcode varchar(50) Not Null,
     Start_Date_Time DateTime Not Null,
     End_Date_Time DateTime Not Null,
