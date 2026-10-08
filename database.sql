@@ -132,8 +132,8 @@ Create table if not exists Choice (
 	Choice_ID int auto_increment primary key,
     Page_Id int Not Null,
     Choice_Text text Not Null,
-    Next_Page int,
     -- Foreign Key
+    Foreign Key (Next_Page_ID) references Pages(Page_ID),
     Foreign Key (Page_ID) references Pages(Page_ID)
 );
 
