@@ -193,9 +193,10 @@ Create table if not exists Event_to_Area (
 Create table if not exists Event_Signup (
 	Event_ID Int Not Null,
     User_ID Int Not Null,
-    Status ENUM('Yes','Maybe','No') Not Null,
+    Status ENUM('Yes','Maybe','No', 'No Reply') Not Null default('No Reply'),
     
     Primary Key (Event_ID, User_ID),
+    
     -- Foreign Keys
     Foreign Key (Event_ID) References Event(Event_ID),
     Foreign Key (User_ID) references Users(User_ID)
