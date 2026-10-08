@@ -212,3 +212,12 @@ Create table if not exists Availability (
     Foreign Key (User_ID) References Users(User_ID)
 );
 
+Create table if not exists Event_Document (
+    Document_ID int auto_increment Primary Key,
+    Event_ID int Not Null,
+    Document_Name varchar(100) Not Null,
+    Document_Path varchar(500) Not Null,
+    Upload_Date DateTime default Current_Timestamp,
+    -- Foreign Keys
+    Foreign Key (Event_ID) references Event(Event_ID) on delete cascade
+);
