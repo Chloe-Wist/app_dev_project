@@ -5,207 +5,209 @@
 -- (Jonathan) There are some changes here that I have not made to the ERD yet
 -- (Hazel) I synchronized this script with the ERD and ERD document on 10/9/2026 5:30PM.
 
-create database if not exists ERD;
+CREATE DATABASE IF NOT EXISTS ERD;
 
-use ERD;
+USE ERD;
 
-Create table if not exists Sim_Role (
-	Sim_Role_ID int auto_increment Primary Key,
-    Sim_Role_Name varchar(50) Not Null,
-    Sim_Role_Description text
+CREATE TABLE IF NOT EXISTS Sim_Role (
+    Sim_Role_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Sim_Role_Name VARCHAR(50) NOT NULL,
+    Sim_Role_Description TEXT
 );
 
-create table if not exists Scheduling_Role (
-	Schd_Role_ID int auto_increment Primary key,
-    Schd_Role_Name varchar(50) Not Null,
-    Schd_Role_Description text
+CREATE TABLE IF NOT EXISTS Scheduling_Role (
+    Schd_Role_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Schd_Role_Name VARCHAR(50) NOT NULL,
+    Schd_Role_Description TEXT
 );
 
-create table if not exists Users (
-	User_ID int auto_increment primary key,
-    Sim_Role_ID int Not Null,
-    Schd_Role_ID int Not Null,
-    First_Name Varchar(50) Not Null,
-    Last_Name Varchar(50) Not Null,
-    Email varchar(255) Not Null Unique,
-    Phone_Number varchar(20) Not Null,
-    Creation_Date Date Not Null,
-    Password_Hash varchar(255) Not Null,
-    Photo Varchar(500),
-    
+CREATE TABLE IF NOT EXISTS Users (
+    User_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Sim_Role_ID INT NOT NULL,
+    Schd_Role_ID INT NOT NULL,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    Phone_Number VARCHAR(20) NOT NULL,
+    Creation_Date DATE NOT NULL,
+    Password_Hash VARCHAR(255) NOT NULL,
+    Photo VARCHAR(500),
+
     -- Foreign Keys:
-    Foreign Key (Sim_Role_ID) references Sim_Role(Sim_Role_ID),
-    Foreign Key (Schd_Role_ID) references Scheduling_Role(Schd_Role_ID)
+    FOREIGN KEY (Sim_Role_ID) REFERENCES Sim_Role(Sim_Role_ID),
+    FOREIGN KEY (Schd_Role_ID) REFERENCES Scheduling_Role(Schd_Role_ID)
 );
 
-
-create table if not exists Activity_Log (
-	Log_ID int auto_increment Primary Key,
-    User_ID int,
-    Time_Stamp DateTime default Current_Timestamp not Null,
+CREATE TABLE IF NOT EXISTS Activity_Log (
+    Log_ID INT AUTO_INCREMENT PRIMARY KEY,
+    User_ID INT,
+    Time_Stamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     -- ?: User_Action can change from varchar to enum if we know what actions will be done
-    User_Action varchar(50) Not Null,
+    User_Action VARCHAR(50) NOT NULL,
     -- Foreign Keys
-    Foreign Key (User_ID) references Users(User_ID)
+    FOREIGN KEY (User_ID) REFERENCES Users(User_ID)
 );
 
-Create table if not exists Access_Request (
-	Request_ID int auto_increment Primary Key,
-    First_Name varchar(50) Not Null,
-    Last_Name varchar(50) Not Null,
-    Company varchar(100) Not Null,
-    Email varchar(255) Not Null,
-    Reason text 
+CREATE TABLE IF NOT EXISTS Access_Request (
+    Request_ID INT AUTO_INCREMENT PRIMARY KEY,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Company VARCHAR(100) NOT NULL,
+    Email VARCHAR(255) NOT NULL,
+    Reason TEXT
 );
 
-Create table if not exists Industry (
-	Industry_ID int auto_increment Primary Key,
-    Industry_Name varchar(100) Not Null,
-    Industry_Description text
+CREATE TABLE IF NOT EXISTS Industry (
+    Industry_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Industry_Name VARCHAR(100) NOT NULL,
+    Industry_Description TEXT
 );
 
-create table if not exists Sessions (
-	Session_ID int auto_increment Primary Key,
-    Session_Name varchar(50) Not Null,
-    Created_By int Not Null,
-    Passcode varchar(50) Not Null,
-    Start_Date_Time DateTime Not Null,
-    End_Date_Time DateTime Not Null,
+CREATE TABLE IF NOT EXISTS Sessions (
+    Session_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Session_Name VARCHAR(50) NOT NULL,
+    Created_By INT NOT NULL,
+    Passcode VARCHAR(50) NOT NULL,
+    Start_Date_Time DATETIME NOT NULL,
+    End_Date_Time DATETIME NOT NULL,
     -- Foreign Keys
-    Foreign Key (Created_By) references Users(User_ID)
+    FOREIGN KEY (Created_By) REFERENCES Users(User_ID)
 );
 
-create table if not exists Analytics (
-	Analytic_ID int auto_increment Primary Key,
-    Session_ID int Not Null,
-    First_Name varchar(50) Not Null,
-    Last_Name varchar(50) Not Null,
-    Email varchar(255) Not Null,
-    Job_Title varchar(50) Not Null,
-    Industry_ID int Not Null,
+CREATE TABLE IF NOT EXISTS Analytics (
+    Analytic_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Session_ID INT NOT NULL,
+    First_Name VARCHAR(50) NOT NULL,
+    Last_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(255) NOT NULL,
+    Job_Title VARCHAR(50) NOT NULL,
+    Industry_ID INT NOT NULL,
     -- Foreign Keys
-    Foreign Key (Session_ID) references Sessions(Session_ID),
-    Foreign Key (Industry_ID) references Industry(Industry_ID)
+    FOREIGN KEY (Session_ID) REFERENCES Sessions(Session_ID),
+    FOREIGN KEY (Industry_ID) REFERENCES Industry(Industry_ID)
 );
 
-Create table if not exists Simulation (
-	Simulation_ID int auto_increment Primary key,
-    Simulation_Description text,
-    Creation_Date DATETIME default Current_Timestamp,
-    Last_Edited_Date DateTime default Current_Timestamp On Update Current_Timestamp,
-    Industry_ID int Not Null Unique,
+CREATE TABLE IF NOT EXISTS Simulation (
+    Simulation_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Simulation_Description TEXT,
+    Creation_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Last_Edited_Date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    Industry_ID INT NOT NULL UNIQUE,
     -- Foreign Keys
-    Foreign Key (Industry_ID) references Industry(Industry_ID)
+    FOREIGN KEY (Industry_ID) REFERENCES Industry(Industry_ID)
 );
 
-Create table if not exists Version (
-	Version_ID int auto_Increment Primary Key,
-    Simulation_ID int Not Null,
-    Is_Published Enum('Published','Unpublished') Not Null,
-    Creation_Date DATETIME default Current_Timestamp,
-    Last_Edited_Date DateTime default Current_Timestamp On Update Current_Timestamp,
-    Version_Language Varchar(30) Not Null,
+CREATE TABLE IF NOT EXISTS Version (
+    Version_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Simulation_ID INT NOT NULL,
+    Is_Published ENUM('Published','Unpublished') NOT NULL,
+    Creation_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Last_Edited_Date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    Version_Language VARCHAR(30) NOT NULL,
     -- Foreign Keys
-    Foreign Key (Simulation_ID) references Simulation(Simulation_ID)
+    FOREIGN KEY (Simulation_ID) REFERENCES Simulation(Simulation_ID)
 );
 
-Create table if not exists Pages (
-	Page_ID int primary key auto_increment,
-    Version_ID int Not Null,
-    Page_Name varchar(100) Not Null,
+CREATE TABLE IF NOT EXISTS Pages (
+    Page_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Version_ID INT NOT NULL,
+    Page_Name VARCHAR(100) NOT NULL,
     -- !: Using JSON instead of BLOB as storing a combination of images, text and videos would cause problems with the database.
     -- This also lets us be able to search for videos, images, etc. in the database by using JSON_EXTRACT() or ->> shortcut
-    Page_Content JSON Not Null,
+    Page_Content JSON NOT NULL,
     -- Foreign Keys
-    Foreign Key (Version_ID) references Version (Version_ID)
+    FOREIGN KEY (Version_ID) REFERENCES Version(Version_ID)
 );
 
-Create table if not exists Choice (
-	Choice_ID int auto_increment primary key,
-    Page_ID int Not Null,
-    Choice_Text text Not Null,
-    Next_Page_ID int Not Null,
-    -- Foreign Key
-    Foreign Key (Next_Page_ID) references Pages(Page_ID),
-    Foreign Key (Page_ID) references Pages(Page_ID)
-);
-
-Create table if not exists Area (
-	Area_ID int auto_increment Primary Key,
-    Area_Name Varchar(50) not Null,
-    Area_Description text not null
-);
-
-Create table if not exists User_to_Area (
-	User_ID int Not Null,
-    Area_ID int Not Null,
-    
-    Primary Key(User_ID,Area_ID),
-    -- Foreign keys
-    Foreign Key (User_ID) references Users (User_ID),
-    Foreign Key (Area_ID) references Area(Area_ID)
-);
-
-Create table if not exists Location (
-	Location_ID int auto_Increment Primary key,
-    Address varchar(255),
-    City varchar(50),
-    State varchar(50),
-    Zip_Code varchar(9)
-);
-
-Create table if not exists Event (
-	Event_ID int auto_increment Primary Key,
-    Event_Name Varchar(100) not Null,
-    Event_Description text Not Null,
-    Event_Date Date Not Null,
-    Start_Time Time Not Null,
-    End_Time Time Not Null,
-    Created_By int not null,
-    Location_ID int not null,
-    Client_Name varchar(100),
+CREATE TABLE IF NOT EXISTS Choice (
+    Choice_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Page_ID INT NOT NULL,
+    Choice_Text TEXT NOT NULL,
+    Next_Page_ID INT NOT NULL,
     -- Foreign Keys
-    Foreign Key (Created_By) references Users(User_ID),
-    Foreign Key (Location_ID) references Location(Location_ID)
+    FOREIGN KEY (Next_Page_ID) REFERENCES Pages(Page_ID),
+    FOREIGN KEY (Page_ID) REFERENCES Pages(Page_ID)
 );
 
-Create table if not exists Event_to_Area (
-	Event_ID int not null,
-    Area_ID int not null,
-    Primary Key(Event_ID,Area_ID),
-    -- Foreign Keys
-    Foreign Key (Event_ID) references Event(Event_ID),
-    Foreign Key (Area_ID) references Area(Area_ID)
+CREATE TABLE IF NOT EXISTS Area (
+    Area_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Area_Name VARCHAR(50) NOT NULL,
+    Area_Description TEXT NOT NULL
 );
 
-Create table if not exists Event_Signup (
-	Event_ID Int Not Null,
-    User_ID Int Not Null,
-    Status ENUM('Yes','Maybe','No', 'No Reply') Not Null default('No Reply'),
-    
-    Primary Key (Event_ID, User_ID),
-    
+CREATE TABLE IF NOT EXISTS User_to_Area (
+    User_ID INT NOT NULL,
+    Area_ID INT NOT NULL,
+
+    PRIMARY KEY (User_ID, Area_ID),
+
     -- Foreign Keys
-    Foreign Key (Event_ID) References Event(Event_ID),
-    Foreign Key (User_ID) references Users(User_ID)
+    FOREIGN KEY (User_ID) REFERENCES Users(User_ID),
+    FOREIGN KEY (Area_ID) REFERENCES Area(Area_ID)
 );
 
-Create table if not exists Availability (
-	Availability_ID Int auto_Increment primary Key,
-    User_ID Int Not Null,
-    Day Enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') Not Null,
-    Start_Time Time Not Null,
-    End_Time Time Not Null,
-    -- Foreign Keys
-    Foreign Key (User_ID) References Users(User_ID)
+CREATE TABLE IF NOT EXISTS Location (
+    Location_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Address VARCHAR(255),
+    City VARCHAR(50),
+    State VARCHAR(50),
+    Zip_Code VARCHAR(9)
 );
 
-Create table if not exists Event_Document (
-    Document_ID int auto_increment Primary Key,
-    Event_ID int Not Null,
-    Document_Name varchar(100) Not Null,
-    Document_Path varchar(500) Not Null,
-    Upload_Date DateTime default Current_Timestamp,
+CREATE TABLE IF NOT EXISTS Event (
+    Event_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Event_Name VARCHAR(100) NOT NULL,
+    Event_Description TEXT NOT NULL,
+    Event_Date DATE NOT NULL,
+    Start_Time TIME NOT NULL,
+    End_Time TIME NOT NULL,
+    Created_By INT NOT NULL,
+    Location_ID INT NOT NULL,
+    Client_Name VARCHAR(100),
     -- Foreign Keys
-    Foreign Key (Event_ID) references Event(Event_ID) on delete cascade
+    FOREIGN KEY (Created_By) REFERENCES Users(User_ID),
+    FOREIGN KEY (Location_ID) REFERENCES Location(Location_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Event_to_Area (
+    Event_ID INT NOT NULL,
+    Area_ID INT NOT NULL,
+
+    PRIMARY KEY (Event_ID, Area_ID),
+
+    -- Foreign Keys
+    FOREIGN KEY (Event_ID) REFERENCES Event(Event_ID),
+    FOREIGN KEY (Area_ID) REFERENCES Area(Area_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Event_Signup (
+    Event_ID INT NOT NULL,
+    User_ID INT NOT NULL,
+    Status ENUM('Yes','Maybe','No','No Reply') NOT NULL DEFAULT('No Reply'),
+
+    PRIMARY KEY (Event_ID, User_ID),
+
+    -- Foreign Keys
+    FOREIGN KEY (Event_ID) REFERENCES Event(Event_ID),
+    FOREIGN KEY (User_ID) REFERENCES Users(User_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Availability (
+    Availability_ID INT AUTO_INCREMENT PRIMARY KEY,
+    User_ID INT NOT NULL,
+    Day ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+    Start_Time TIME NOT NULL,
+    End_Time TIME NOT NULL,
+    -- Foreign Keys
+    FOREIGN KEY (User_ID) REFERENCES Users(User_ID)
+);
+
+CREATE TABLE IF NOT EXISTS Event_Document (
+    Document_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Event_ID INT NOT NULL,
+    Document_Name VARCHAR(100) NOT NULL,
+    Document_Path VARCHAR(500) NOT NULL,
+    Upload_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    -- Foreign Keys
+    FOREIGN KEY (Event_ID) REFERENCES Event(Event_ID) ON DELETE CASCADE
 );
