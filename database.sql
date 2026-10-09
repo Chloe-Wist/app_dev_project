@@ -2,7 +2,8 @@
 -- Comments with ? at start = questions about how something works or changes made from ERD diagram
 -- Comments with ! at start = explanation about a choice
 -- Comment with ~ at start = Unfinished work
--- There are some changes here that I have not made to the ERD yet
+-- (Jonathan) There are some changes here that I have not made to the ERD yet
+-- (Hazel) I synchronized this script with the ERD and ERD document on 10/9/2026 5:30PM.
 
 create database if not exists ERD;
 
@@ -20,7 +21,6 @@ create table if not exists Scheduling_Role (
     Schd_Role_Description text
 );
 
--- !: User table name changed to Users here
 create table if not exists Users (
 	User_ID int auto_increment primary key,
     Sim_Role_ID int Not Null,
@@ -53,7 +53,6 @@ Create table if not exists Access_Request (
 	Request_ID int auto_increment Primary Key,
     First_Name varchar(50) Not Null,
     Last_Name varchar(50) Not Null,
-    -- !: From Organization to Company
     Company varchar(100) Not Null,
     Email varchar(255) Not Null,
     Reason text 
@@ -61,7 +60,6 @@ Create table if not exists Access_Request (
 
 Create table if not exists Industry (
 	Industry_ID int auto_increment Primary Key,
-    -- !: Changed from Name in ERD to Industry_Name to avoid repetition
     Industry_Name varchar(100) Not Null,
     Industry_Description text
 );
@@ -79,26 +77,23 @@ create table if not exists Sessions (
 
 create table if not exists Analytics (
 	Analytic_ID int auto_increment Primary Key,
-    Session_ID int,
+    Session_ID int Not Null,
     First_Name varchar(50) Not Null,
     Last_Name varchar(50) Not Null,
     Email varchar(255) Not Null,
     Job_Title varchar(50) Not Null,
-    Industry_ID int,
+    Industry_ID int Not Null,
     -- Foreign Keys
     Foreign Key (Session_ID) references Sessions(Session_ID),
     Foreign Key (Industry_ID) references Industry(Industry_ID)
 );
 
-
-
 Create table if not exists Simulation (
 	Simulation_ID int auto_increment Primary key,
     Simulation_Description text,
-    Is_Published Enum('Published','Unpublished') Not Null,
     Creation_Date DATETIME default Current_Timestamp,
     Last_Edited_Date DateTime default Current_Timestamp On Update Current_Timestamp,
-    Industry_ID int Not Null,
+    Industry_ID int Not Null Unique,
     -- Foreign Keys
     Foreign Key (Industry_ID) references Industry(Industry_ID)
 );
@@ -114,7 +109,6 @@ Create table if not exists Version (
     Foreign Key (Simulation_ID) references Simulation(Simulation_ID)
 );
 
--- !: Page changed to Pages
 Create table if not exists Pages (
 	Page_ID int primary key auto_increment,
     Version_ID int Not Null,
@@ -126,11 +120,9 @@ Create table if not exists Pages (
     Foreign Key (Version_ID) references Version (Version_ID)
 );
 
--- ?~: I am unsure about how Next_Page is supposed to work here if it's an int that denotes page number or 
--- if it's meant to tell the system to change the state of the webpage the user is currently on
 Create table if not exists Choice (
 	Choice_ID int auto_increment primary key,
-    Page_Id int Not Null,
+    Page_ID int Not Null,
     Choice_Text text Not Null,
     Next_Page_ID int Not Null,
     -- Foreign Key
@@ -144,9 +136,8 @@ Create table if not exists Area (
     Area_Description text not null
 );
 
--- !: Removed User_To_Area column as we can make the Foreign keys a composite Primary Key
 Create table if not exists User_to_Area (
-	User_Id int Not Null,
+	User_ID int Not Null,
     Area_ID int Not Null,
     
     Primary Key(User_ID,Area_ID),
@@ -163,7 +154,6 @@ Create table if not exists Location (
     Zip_Code varchar(9)
 );
 
--- !: Client changed to Client_Name because Workbench was highlighting it
 Create table if not exists Event (
 	Event_ID int auto_increment Primary Key,
     Event_Name Varchar(100) not Null,
@@ -172,15 +162,13 @@ Create table if not exists Event (
     Start_Time Time Not Null,
     End_Time Time Not Null,
     Created_By int not null,
-    Location_Id int not null,
+    Location_ID int not null,
     Client_Name varchar(100),
-    -- ~: Assume Doucment is here: Document 
     -- Foreign Keys
-    Foreign Key (Created_By) references Users(User_Id),
+    Foreign Key (Created_By) references Users(User_ID),
     Foreign Key (Location_ID) references Location(Location_ID)
 );
 
--- !: Removed Event_To_Area column as we can make the Foreign keys a composite Primary Key
 Create table if not exists Event_to_Area (
 	Event_ID int not null,
     Area_ID int not null,
