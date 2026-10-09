@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Users (
     Last_Name VARCHAR(50) NOT NULL,
     Email VARCHAR(255) NOT NULL UNIQUE,
     Phone_Number VARCHAR(20) NOT NULL,
-    Creation_Date DATE NOT NULL,
+    Creation_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Password_Hash VARCHAR(255) NOT NULL,
     Photo VARCHAR(500),
 
@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS Activity_Log (
     Time_Stamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     -- ?: User_Action can change from varchar to enum if we know what actions will be done
     User_Action VARCHAR(50) NOT NULL,
+
     -- Foreign Keys
     FOREIGN KEY (User_ID) REFERENCES Users(User_ID)
 );
@@ -67,9 +68,10 @@ CREATE TABLE IF NOT EXISTS Sessions (
     Session_ID INT AUTO_INCREMENT PRIMARY KEY,
     Session_Name VARCHAR(50) NOT NULL,
     Created_By INT NOT NULL,
-    Passcode VARCHAR(50) NOT NULL,
+    Passcode VARCHAR(50) NOT NULL UNIQUE,
     Start_Date_Time DATETIME NOT NULL,
-    End_Date_Time DATETIME NOT NULL,
+    End_Date_Time DATETIME,
+
     -- Foreign Keys
     FOREIGN KEY (Created_By) REFERENCES Users(User_ID)
 );
@@ -82,6 +84,7 @@ CREATE TABLE IF NOT EXISTS Analytics (
     Email VARCHAR(255) NOT NULL,
     Job_Title VARCHAR(50) NOT NULL,
     Industry_ID INT NOT NULL,
+
     -- Foreign Keys
     FOREIGN KEY (Session_ID) REFERENCES Sessions(Session_ID),
     FOREIGN KEY (Industry_ID) REFERENCES Industry(Industry_ID)
@@ -90,9 +93,10 @@ CREATE TABLE IF NOT EXISTS Analytics (
 CREATE TABLE IF NOT EXISTS Simulation (
     Simulation_ID INT AUTO_INCREMENT PRIMARY KEY,
     Simulation_Description TEXT,
-    Creation_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    Last_Edited_Date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    Creation_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Last_Edited_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     Industry_ID INT NOT NULL UNIQUE,
+
     -- Foreign Keys
     FOREIGN KEY (Industry_ID) REFERENCES Industry(Industry_ID)
 );
@@ -101,9 +105,10 @@ CREATE TABLE IF NOT EXISTS Version (
     Version_ID INT AUTO_INCREMENT PRIMARY KEY,
     Simulation_ID INT NOT NULL,
     Is_Published ENUM('Published','Unpublished') NOT NULL,
-    Creation_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    Last_Edited_Date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    Creation_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Last_Edited_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     Version_Language VARCHAR(30) NOT NULL,
+
     -- Foreign Keys
     FOREIGN KEY (Simulation_ID) REFERENCES Simulation(Simulation_ID)
 );
@@ -115,6 +120,7 @@ CREATE TABLE IF NOT EXISTS Pages (
     -- !: Using JSON instead of BLOB as storing a combination of images, text and videos would cause problems with the database.
     -- This also lets us be able to search for videos, images, etc. in the database by using JSON_EXTRACT() or ->> shortcut
     Page_Content JSON NOT NULL,
+
     -- Foreign Keys
     FOREIGN KEY (Version_ID) REFERENCES Version(Version_ID)
 );
@@ -124,6 +130,7 @@ CREATE TABLE IF NOT EXISTS Choice (
     Page_ID INT NOT NULL,
     Choice_Text TEXT NOT NULL,
     Next_Page_ID INT NOT NULL,
+
     -- Foreign Keys
     FOREIGN KEY (Next_Page_ID) REFERENCES Pages(Page_ID),
     FOREIGN KEY (Page_ID) REFERENCES Pages(Page_ID)
@@ -132,7 +139,7 @@ CREATE TABLE IF NOT EXISTS Choice (
 CREATE TABLE IF NOT EXISTS Area (
     Area_ID INT AUTO_INCREMENT PRIMARY KEY,
     Area_Name VARCHAR(50) NOT NULL,
-    Area_Description TEXT NOT NULL
+    Area_Description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS User_to_Area (
@@ -151,7 +158,7 @@ CREATE TABLE IF NOT EXISTS Location (
     Address VARCHAR(255),
     City VARCHAR(50),
     State VARCHAR(50),
-    Zip_Code VARCHAR(9)
+    Zip_Code VARCHAR(10)
 );
 
 CREATE TABLE IF NOT EXISTS Event (
@@ -164,6 +171,7 @@ CREATE TABLE IF NOT EXISTS Event (
     Created_By INT NOT NULL,
     Location_ID INT NOT NULL,
     Client_Name VARCHAR(100),
+
     -- Foreign Keys
     FOREIGN KEY (Created_By) REFERENCES Users(User_ID),
     FOREIGN KEY (Location_ID) REFERENCES Location(Location_ID)
@@ -198,6 +206,7 @@ CREATE TABLE IF NOT EXISTS Availability (
     Day ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
     Start_Time TIME NOT NULL,
     End_Time TIME NOT NULL,
+
     -- Foreign Keys
     FOREIGN KEY (User_ID) REFERENCES Users(User_ID)
 );
@@ -207,7 +216,8 @@ CREATE TABLE IF NOT EXISTS Event_Document (
     Event_ID INT NOT NULL,
     Document_Name VARCHAR(100) NOT NULL,
     Document_Path VARCHAR(500) NOT NULL,
-    Upload_Date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Upload_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     -- Foreign Keys
     FOREIGN KEY (Event_ID) REFERENCES Event(Event_ID) ON DELETE CASCADE
 );
