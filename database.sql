@@ -222,3 +222,11 @@ CREATE TABLE IF NOT EXISTS Event_Document (
     -- Foreign Keys
     FOREIGN KEY (Event_ID) REFERENCES Event(Event_ID) ON DELETE CASCADE
 );
+
+
+-- Insert non changing data
+INSERT INTO sim_role (sim_role_name) 
+VALUES ('Admin'), ('Editor'), ('Viewer');
+
+INSERT INTO scheduling_role (schd_role_name)
+VALUES ('Admin'), ('Scheduler'), ('Volunteer');
