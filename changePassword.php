@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 			$message = "Password changed";
 		} else {
-			$message = "Failed";
+			$message = "Failed to find user";
 		}
 		$stmt->close();
 	}

@@ -9,22 +9,15 @@ CREATE DATABASE IF NOT EXISTS ERD;
 
 USE ERD;
 
-CREATE TABLE IF NOT EXISTS Sim_Role (
-    Sim_Role_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Sim_Role_Name VARCHAR(50) NOT NULL,
-    Sim_Role_Description TEXT
-);
-
-CREATE TABLE IF NOT EXISTS Scheduling_Role (
-    Schd_Role_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Schd_Role_Name VARCHAR(50) NOT NULL,
-    Schd_Role_Description TEXT
+CREATE TABLE IF NOT EXISTS Roles (
+    Roles_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Roles_Name VARCHAR(50) NOT NULL,
+    Roles_Description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Users (
     User_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Sim_Role_ID INT NOT NULL,
-    Schd_Role_ID INT NOT NULL,
+    Roles_ID INT NOT NULL,
     First_Name VARCHAR(50) NOT NULL,
     Last_Name VARCHAR(50) NOT NULL,
     Username VARCHAR(20) NOT NULL UNIQUE,
@@ -35,8 +28,7 @@ CREATE TABLE IF NOT EXISTS Users (
     Photo VARCHAR(500),
 
     -- Foreign Keys:
-    FOREIGN KEY (Sim_Role_ID) REFERENCES Sim_Role(Sim_Role_ID),
-    FOREIGN KEY (Schd_Role_ID) REFERENCES Scheduling_Role(Schd_Role_ID)
+    FOREIGN KEY (Roles_ID) REFERENCES Sim_Roles(Roles_ID),
 );
 
 CREATE TABLE IF NOT EXISTS Activity_Log (
@@ -225,8 +217,5 @@ CREATE TABLE IF NOT EXISTS Event_Document (
 
 
 -- Insert non changing data
-INSERT INTO sim_role (sim_role_name) 
-VALUES ('Admin'), ('Editor'), ('Viewer');
-
-INSERT INTO scheduling_role (schd_role_name)
-VALUES ('Admin'), ('Scheduler'), ('Volunteer');
+INSERT INTO roles (role_name) 
+VALUES ('Owner'), ('Admin'), ('Facilitator'), ('Volunteer');
