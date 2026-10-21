@@ -1,285 +1,218 @@
 <?php
-
-/** Chloe Wist, Josh Patey, Ray Orozco 
- * 
- * This file will create an interactive page that allows users to create and update
- * their own custom story. 
-*/
-
-
-// Basic session hardening (set early)
-ini_set('session.cookie_httponly', 1);
-// If serving over HTTPS, uncomment next line
-ini_set('session.cookie_secure', 1);
-    
-// Ensure session is started for consistent session usage
+// Ensure session is started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-// Require login to access editor
+// Require login
 if (!isset($_SESSION['user_id'])) {
     header('Location: loginPage.php');
     exit;
 }
 
-// Connects to the database
-require("helpers/config.php"); 
+require("helpers/config.php");
 
 
+// Variable Declaration
+$story_list = [];
+    // This array holds the ID of all the stories the user has.
+    // The name and public variables are changeable in this interface.
 
-// Holds Prompt class, which will also require actions.php, which holds the Action class
-require("helpers/prompt.php");
+// Currently, for each story in the list, the program will create a set of buttons.
+// One button to play the story,
+// One button to edit the story,
+// And one button to toggle the public/private state of the story.
+
+// The id will be displayed for each story so that people can share each other's ID's for public story searching.
 
 
-
-
+//Additionally, there is a New Story button. When pressed, it takes you straight to the editor. (With a new story added to the database.)
 
 ?>
+
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Prompt Editor</title>
-    <link rel="stylesheet" href="styles/text_adventure_editor.css">
-    <link rel="stylesheet" href="styles/navbar.css">
-    <link rel="stylesheet" href="styles/main.css">
-</head>
-<body>
+    <head>
+        <title> User Stories </title>
+                <link rel="stylesheet" href="styles/navbar.css">
+                <link rel="stylesheet" href="styles/main.css">
+    </head>
+    <body>
+
+    <?php include("helpers/navbar.php")?>
+
+        <div class="page-container">
+            <div class="row">
+                <a class="btn btn-blue fixed-top-left" href="UserDashboard.php">Back</a>
+            </div>
+
 <?php
+// Updates the story information
+    if (isset($_POST['story_id'])){
+        for ($i = 0; $i < count($_POST['story_id']); $i++) {
+            $id = $_POST['story_id'][$i];
+            $story_title = htmlspecialchars($_POST['story_title'][$i]);
+            $public = isset($_POST['public'][$i])?'TRUE':'FALSE';
+            $query = "UPDATE stories SET 
+                story_title = '".$story_title."',
+                public = ".$public."
+                WHERE id = ".$id;
 
-include("helpers/navbar.php");
-
-echo '<div class="page-container">';
-
-// Page Variables
-$user_id = $_SESSION['user_id'];
-$story_id;
-$current_prompt; // current_prompt is the prompt the page is currently accessing
-
-// If a user clicked edit story from their dashboard
-if (isset($_GET['story_id'])) {
-    $story_id = $_GET['story_id'];
-}
-// If the page refreshed with a new prompts
-else if (isset($_GET['new_prompt'])) {
-    $query = "SELECT story_id FROM prompts WHERE id = ".$_GET['new_prompt'];
-    $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
-    $story_id = $result['story_id'];
-} // Else
-else {
-    echo "<p class='fail'>Unknown story</p>";
-    die;
-}
-
-// Tests that the user should have access to editing this story
-$query = "SELECT user_id FROM stories WHERE id = ".$story_id;
-$result = mysqli_fetch_assoc(mysqli_query($conn, $query));
-if ($result['user_id'] != $user_id) {
-    echo "<p class='fail'>You do not have access to this story</p>";
-    die;
-}
-
-
-
-// Handles form submission
-require("helpers/text_editor.php");   
-
-
-// new_prompt is the prompt that the previous page sent as the prompt to be accessed next
-if (isset($_GET["new_prompt"])) {
-    $current_prompt = new Prompt ($_GET["new_prompt"], $story_id);
-}
-else {
-    $current_prompt = new Prompt(-1, $story_id); // Default is first prompt
-}
-?>
-
-    <!-- Floating action buttons bottom-right: Back (blue) above Save (green) -->
-        <div class="fab-container">
-            <button class="btn btn-green" type="submit" name="save_edits" form="edit_prompt">Save Edits</button>
-        </div>
-
-<!-- Return to previous prompt button -->
-
-    <?php 
-        // This will print a link (or links) that will send a get variable with an attribute
-        // called new_prompt, which is the prompt that will be loaded if the link is clicked.
-        // new_prompt stores the id of the prompt to be loaded.
-        // It will create a link for each prompt that leads to this prompt via an action. 
-        if ($current_prompt->previous_prompts != null) { // If there is a prompt to go back to:
-            echo '<div class="card" id="return_links">';
-            foreach($current_prompt->previous_prompts as $p) {
-                // Creates a link that holds either the short name or the prompt id if no short name is provided
-                if ($p['prompt'] != $current_prompt->prompt_id) {
-                    echo '
-                    <a href="CustomAdventureEditor.php?new_prompt='.($p['prompt']).'"
-                        class="btn btn-blue" name="return" >
-                        Go to Previous Prompt: '.
-                        ($p['short_name']?$p['short_name']:$p['prompt']).
-                    '</a> ';
-                } 
-                else {
-                    echo "<p class='return_null'> This prompt leads to itself</p>";
-                }
+           try {
+                mysqli_query($conn, $query);
+                echo "<p class='success'>Story ".($i + 1)." Updated</p>";
             }
-            echo "</div>";
+            catch (Exception $e) {
+                echo "<p class='fail>Story ".($i + 1)." Failed to Update</p>";
+            } 
         }
+    }
+
+    // Creates Story
+    if (isset($_POST['create_story'])){
+        $query = "INSERT INTO stories (user_id) VALUES (".$_SESSION['user_id'].")";
+        try {
+            mysqli_query($conn, $query);
+            
+            $query = "INSERT INTO prompts (prompt, prompt_type, story_id) VALUES 
+                ('Story Start', 'start', (SELECT LAST_INSERT_ID()))";
+            try {
+                mysqli_query($conn, $query);
+                echo "<p class='success'>Story Created</p>";
+            } catch(Exception $e) {
+                echo "<p class='fail'>Failed to Create Story</p>";
+            }
+        }
+        catch (Exception $e) {
+            echo "<p class='fail'>Failed to Create Story</p>";
+        }
+    }
+
+    // Delete Story
+    if(isset($_POST['delete_story_start'])) {
+        $id = $_POST['delete_story_start'];
+        $query = "SELECT story_title FROM stories WHERE id = ".$id;
+        $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
+
+        ?>
+        <div class="card">
+        <form method="POST" action="UserStories.php">
+            <p class='warning'>Are you sure you want to delete this story? 
+                Deleted stories cannot be recovered.<br>
+                Story ID: <?=$id?><br>
+                <?=($result['story_title']?'Story Title: '.$result['story_title'].'<br>':'')?>
+                </p>
+            <input type="radio" name="delete_story" value="<?=$id?>">
+            Yes, delete this story.<br>
+            <input type="radio" name="delete_story" value="cancel" checked>
+            No, do not delete this story.<br>
+            <input type="submit" class="btn btn-red" value="Confirm">
+        </form>
+        </div>
+        <?php
+    }
+
+    if(isset($_POST['delete_story'])) {
+        $story_id = $_POST['delete_story'];
+
+        if ($story_id != 'cancel') {
+            // Delete the prompts and actions from this story
+            $query = "DELETE FROM prompts WHERE story_id = ".$story_id;
+            mysqli_query($conn, $query);
+            $query = "DELETE FROM actions WHERE story_id = ".$story_id;
+            mysqli_query($conn, $query);
+            // Deletes the story
+            $query = "DELETE FROM stories WHERE id = ".$story_id;
+            mysqli_query($conn, $query);
+        } 
+        else {
+            echo "Deletion Canceled";
+        }
+    }
+
+
+    
+    // Play story:
+     if (isset($_POST['play_story'])){
+        $id = $_POST['play_story'];
+        header("Location: text_adventure.php?story_id=$id");
+    }
+    
+    // Edit story:
+    if (isset($_POST['edit_story'])){
+        $id = $_POST['edit_story'];
+        header("Location: CustomAdventureEditor.php?story_id=$id");
+
+        // send a get variable called story_id with the id of the story
+    }
+
+$query = "SELECT id, story_title, public FROM stories WHERE user_id = ".$_SESSION['user_id'];
+$result = mysqli_query($conn, $query);
+while ($a = mysqli_fetch_assoc($result)) {
+    $r = ["id" => $a['id'], "story_title" => $a['story_title'], "public" => $a['public']];
+    array_push($story_list, $r);
+} ?>
+
+    <!--List of Stories User has Created-->
+    <div class="card"><h2 style="margin:0;color:#fff;">Your Stories</h2></div>
+
+    <form id="user_stories_form" method="POST" action="UserStories.php">
+
+    <?php
+        foreach ($story_list as $i => $story):
     ?>
 
+    <div class="card">
+        <!--Story ID-->
+            <p> Story ID: <?php echo $story["id"]; ?> </p>
+            <input type="hidden" name="story_id[<?php echo $i; ?>]" value="<?=$story["id"]?>">
+        <!--Story Title-->
+            <p> Story Title:
+                <input type="text" name="story_title[<?php echo $i; ?>]" value="<?php echo ($story["story_title"]); ?>">
+            </p>
 
+        <!--Public vs Private Setting-->
+                Public:
+                <!-- Rounded switch -->
+                <label class="switch">
+                    <input type="checkbox" name="public[<?php echo $i; ?>]" 
+                        <?php echo ($story["public"] ? 'checked' : ''); ?>>
+                    <span class="slider_round"></span>
+                </label>
+                <!-- https://www.w3schools.com/howto/howto_css_switch.asp -->
+                 <br>
+                <button class="btn btn-red" type="submit" name="delete_story_start" value="<?=$story["id"]?>"> Delete Story </button>
+                <br>
+                
+                <button class="btn" type="submit" name="play_story" value="<?php echo $story["id"]; ?>"> Play Story </button>
+                <button class="btn" type="submit" name="edit_story" value="<?php echo $story["id"]; ?>"> Edit Story </button>
 
-<!-- Creates a form to edit the prompt and its actions-->
-
-    <form method="POST" action="CustomAdventureEditor.php?new_prompt=<?=$current_prompt->prompt_id?>" id="edit_prompt">
-        <div class="card">
-        <h2>Prompt</h2>
-
-        <!-- Prompt short name input -->
-        <h3>Name</h3>
-        <input type="text" name="short_name" value="<?php echo ($current_prompt->short_name); ?>">
-
-
-        <!--Sends the prompt id to be used for updating the database-->    
-        <input type="hidden" name="prompt_id" id="prompt_id" value="<?=$current_prompt->prompt_id?>">
-    
-        <!-- Prompt description input -->    
-        <h3>Text</h3>
-        <textarea name="prompt" id="prompt"  
-            placeholder="Type here..."><?php echo ($current_prompt->prompt_description); ?></textarea>
-
-        <!--Prompt Flags -->
-        <h3>Flags</h3>
-        <input type="radio" id="not_flagged" name="flag" value="none"
-            <?=(($current_prompt->flag == 'none')?'checked':'')?>>None <br>
-        <input type="radio" id="flagged" name="flag" value="flagged"
-            <?=(($current_prompt->flag == 'flagged')?'checked':'')?>>Flagged <br><br>
-
-        <!-- Prompt Type -->
-        <input type="hidden" name="prompt_type" value="<?=$current_prompt->prompt_type?>">
-
-        <!--Prompt Deletion-->
-        <?php
-        // You can only delete a prompt if there are no actions under it
-        if ($current_prompt->actions == []) {
-            ?>
-            <button class="btn btn-red" type="submit"  name="delete_prompt" value="<?=$current_prompt->prompt_id?>">Delete prompt</button>
-            <?php
-        }
-        ?>
-        </div>
-
-        <?php
-        ?>
-        <!--Action input-->
-        <div class="card">
-        <h2>Actions</h2>
-        <?php                                  
-            foreach ($current_prompt->actions as $i => $action):
-                if ($action instanceof Action) : ?>
-                <div class="card">
-
-                    <!-- Action ID --> 
-                        <input type="hidden" name="action_id[<?php echo $i; ?>]" 
-                            value="<?=$action->action_id?>">
-
-                    <!--Action Title-->
-                        <h3>Action <?=$i + 1?></h3>
-                        
-                    <!-- Textbox for the Action -->
-                        <h5>Action Text</h5>
-                        <textarea name="action_text[<?php echo $i; ?>]" rows="3" placeholder="Action text..."><?php echo ($action->display_text); ?></textarea>
-                            <!--The name of the input holds the number that the action is stored in in the array-->   
-
-                    <!--Textbox for the consequence of the action-->
-                        <h5>Consequence Text</h5>
-                        <textarea name="action_consequence[<?php echo $i; ?>]" rows="3" placeholder="Consequence text..."><?php echo($action->consequence_text); ?></textarea>
-                            <!--The name of the input holds the number that the action is stored in in the array--> 
-                            
-                    <!--Destination of Action-->
-                        <h5>Destination</h5>
-
-                        <!--Displays current prompt this action leads to-->
-                        <?php                            
-                            // Will store the default value (the id and shortname of the prompt) of the destination if it exists
-                            $default; 
-                            if ($action->destination_prompt != null) { // If there is a destination prompt set
-                                // This query will retrieve the short_name and ID from the prompt that this action leads to
-                                $query = "SELECT short_name, prompts.id FROM prompts JOIN actions ON prompts.id = actions.consequence_prompt
-	                                WHERE actions.consequence_prompt = ".$action->destination_prompt;
-                                $default = mysqli_fetch_assoc(mysqli_query($conn, $query));
-                                echo "Current Destination: ".($default['short_name']?$default['short_name']:$default['id']);
-                            }
-                            else {
-                                echo "No set destination.";
-                            } 
-                        ?>
-
-                        <!-- Drop down list of possible prompts the action can lead to -->
-                        <select name="destination[<?php echo $i; ?>]", > 
-                            <?php 
-                            // Retrieves all the prompts that the user can select to create a drop down list of them
-                            $query = "SELECT id, short_name FROM prompts WHERE story_id = ".$story_id;
-                            $result = mysqli_query($conn, $query);
-
-                            // For each retrieved prompt:
-                            while ($a = mysqli_fetch_assoc($result)) {
-                                // If no short name was given, generic names will be given
-                                if ($a['short_name'] == null) {
-                                    echo "<option value='".$a['id']."'".($default['id'] == $a['id']?"selected":"")."> Untitled Prompt ".$a['id']." </option>";
-                                }
-                                else {
-                                    echo "<option value='".$a['id']."'".($default['id'] == $a['id']?"selected":"").">".$a['short_name']."</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                        <!-- https://stackoverflow.com/questions/76684999/how-can-i-make-a-drop-down-menu-in-html -->
-
-
-                    <!--Create a new prompt-->
-                        <!--Will create a new prompt for the action it was clicked from, and save all entered information -->
-                        <button class="btn" type="submit" name="new_prompt" value="<?=$action->action_id?>">Add new destination</button>
-
-
-                    <!--Creates a link to go to the prompt this action leads to-->
-                        <?php 
-                        // If the action has a prompt that it leads to, a link will be created leading
-                        // to that prompt.
-                        if (isset($action->destination_prompt)) {
-                            // new_prompt is the prompt that the previous page sent as the prompt to be accessed next
-                            if ($action->destination_prompt == $current_prompt->prompt_id) {
-                                echo "<p>This prompt leads to itself</p>";
-                            }
-                            else {
-                                echo '<a href="CustomAdventureEditor.php?new_prompt='.$action->destination_prompt.'"
-                                    class="btn" name="new_prompt">
-                                    Edit Destination
-                                </a>';
-                            }
-                        }
-                        ?>
-
-                    <br>
-                    <!--Delete Action-->
-                    <button class="btn btn-red" type="submit" name="delete_action" value="<?=$action->action_id?>">Delete action</button>                        
-                </div>
-                <?php endif; 
-            endforeach; ?>
         
-        <!--Create a new action-->
-        <button class="btn" type="submit" name="new_action">Create a new Action</button>
-        </div>
-
-        <!-- Saves the edits button -->
-        <input class="btn btn-green" type="submit" name="save_edits" id="save_edits" value="Save Edits">
-        
-    </form>
-
-    <div class="card" id="editor_nav_bar">
-    <!--Creates a pop up bar on the side to navigate to different prompts-->
-    <?php require("helpers/text_navigation.php");?>
     </div>
-</div>
-<?php include("helpers/footer.php"); ?>
-</body>
+
+    <?php endforeach; ?>
+    <br>
+    <button class="btn" type="submit" name="create_story"> Create Story </button>
+    <br>
+    <button class="btn btn-green" type="submit" name="save_edits"> Save Edits </button>
+
+
+
+    </form>
+    </div>
+
+    <!-- Floating action button bottom-right: Save only -->
+    <div class="fab-container">
+        <button class="btn btn-green" type="submit" name="save_edits" form="user_stories_form">Save Edits</button>
+    </div>
+
+    <?php include("helpers/footer.php"); ?>
+    </body>
+
+
+
 </html>
+
+
+
+
+
