@@ -1,11 +1,36 @@
-INSERT INTO users (username, email, password_hash, sim_role_id, schd_role_id,
+INSERT INTO users (username, email, password_hash, role_id,
 	first_name, last_name, phone_number)
-VALUES ('User', 'user@hil.com', '1', 1, 1, 'Alice', 'Greene', 2);
+VALUES ('Al', 'user@hil.com', '1', 1, 'Alice', 'Greene', 2);
 
-INSERT INTO users (username, email, password_hash, sim_role_id, schd_role_id,
+INSERT INTO users (username, email, password_hash, role_id,
 	first_name, last_name, phone_number)
-VALUES ('Bob', 'bob@hil.com', '1', 2, 2, 'Roberto', 'Rock', 2);
+VALUES ('Bob', 'bob@hil.com', '1', 2, 'Roberto', 'Rock', 2);
 
-INSERT INTO users (username, email, password_hash, sim_role_id, schd_role_id,
+INSERT INTO users (username, email, password_hash, role_id,
 	first_name, last_name, phone_number)
-VALUES ('Jennifer', 'jenn@hil.com', '1', 3, 3, 'Jennifer', 'Brown', 2);
+VALUES ('Jennifer', 'jenn@hil.com', '1', 3, 'Jennifer', 'Brown', 2);
+
+INSERT INTO users (username, email, password_hash, role_id,
+	first_name, last_name, phone_number)
+VALUES ('Don', 'susan@hil.com', '1', 4, 'Don', 'Desmond', 2);
+
+
+
+
+
+
+INSERT INTO users (username, email, password_hash, role_id,
+	first_name, last_name, phone_number)
+VALUES ('Owner', 'user@hil.com', '1', 1, 'Alice', 'Greene', 2);
+
+INSERT INTO users (username, email, password_hash, role_id,
+	first_name, last_name, phone_number)
+VALUES ('Admin', 'bob@hil.com', '1', 2, 'Roberto', 'Rock', 2);
+
+INSERT INTO users (username, email, password_hash, role_id,
+	first_name, last_name, phone_number)
+VALUES ('Facilitator', 'jenn@hil.com', '1', 3, 'Jennifer', 'Brown', 2);
+
+INSERT INTO users (username, email, password_hash, role_id,
+	first_name, last_name, phone_number)
+VALUES ('Owner', 'susan@hil.com', '1', 4, 'Don', 'Desmond', 2);

@@ -26,23 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$message = "Please enter username and password.";
 	} else {
 		$stmt = $conn->prepare(
-			'SELECT user_id, password_hash, schd_role_name, sim_role_name
-			FROM users JOIN scheduling_role 
-			ON users.schd_role_id = scheduling_role.Schd_Role_ID
-			JOIN sim_role ON users.Sim_Role_ID = sim_role.Sim_Role_ID
+			'SELECT user_id, password_hash, role_name
+			FROM users JOIN roles
+			ON users.role_id = roles.Role_ID
 			WHERE username = ?'
 		);
 		$stmt->bind_param("s", $username);
 		$stmt->execute();
-		$stmt->bind_result($uid, $hash, $schd_role, $sim_role);
+		$stmt->bind_result($uid, $hash, $role);
 		if ($stmt->fetch()) {
 			if (password_verify($password, $hash)) {
 				// Harden session: regenerate ID on login
 				session_regenerate_id(true);
 				$_SESSION['user_id'] = $uid;
 				$_SESSION['username'] = $username;
-				$_SESSION['schd_role'] = $schd_role;
-				$_SESSION['sim_role'] = $sim_role;
+				$_SESSION['role'] = $role;
 				header("Location: userdashboard.php");
 				exit;
 			} else {
