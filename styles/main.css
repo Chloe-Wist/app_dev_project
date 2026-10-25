@@ -278,3 +278,18 @@ form select:focus {
         font-size: 26px;
     }
 }
+
+/* Request access link */
+.request-access {
+    display: block;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    color: #4776c5;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.request-access:hover {
+    text-decoration: underline;
+}
