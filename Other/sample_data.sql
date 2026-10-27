@@ -115,24 +115,6 @@ INSERT INTO Simulation_to_Session (Session_ID, Simulation_ID)
 VALUES (4, 2);
 
 
-INSERT INTO users (username, email, password_hash, role_id,
-	first_name, last_name, phone_number)
-VALUES ('Al', 'user@hil.com', '1', 1, 'Alice', 'Greene', 2);
-
-INSERT INTO users (username, email, password_hash, role_id,
-	first_name, last_name, phone_number)
-VALUES ('Bob', 'bob@hil.com', '1', 2, 'Roberto', 'Rock', 2);
-
-INSERT INTO users (username, email, password_hash, role_id,
-	first_name, last_name, phone_number)
-VALUES ('Jennifer', 'jenn@hil.com', '1', 3, 'Jennifer', 'Brown', 2);
-
-INSERT INTO users (username, email, password_hash, role_id,
-	first_name, last_name, phone_number)
-VALUES ('Don', 'susan@hil.com', '1', 4, 'Don', 'Desmond', 2);
-
-
-
 -- Simulation data
 INSERT INTO industry (industry_name) VALUES ('General');
 
