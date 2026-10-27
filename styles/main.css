@@ -186,6 +186,27 @@ form input:focus {
     background-color: #ffffff;
 }
 
+/* Dropdown fields */
+form select {
+    width: 100%;
+    padding: 12px 14px;
+    box-sizing: border-box;
+    border: 1px solid #d1d9e6;
+    border-radius: 8px;
+    background-color: #f9fafc;
+    font-size: 15px;
+    color: #243047;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+form select:focus {
+    outline: none;
+    border-color: #4776c5;
+    box-shadow: 0 0 0 3px rgba(71, 118, 197, 0.15);
+    background-color: #ffffff;
+}
+
 /* Buttons */
 .button-primary,
 .button-secondary {
@@ -256,4 +277,19 @@ form input:focus {
     h1 {
         font-size: 26px;
     }
+}
+
+/* Request access link */
+.request-access {
+    display: block;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    color: #4776c5;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.request-access:hover {
+    text-decoration: underline;
 }
