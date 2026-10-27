@@ -7,10 +7,15 @@
  * 
  * TODO: Add external access request form URL
  * TODO: Add header and footer from HIL website
+ * TODO: Implement lockout mechanism properly (see commented-out code below)
+ * TODO: Figure out timezones
 */
 
-// Starts a PHP session
+// Sets the timezone used for date and time operations
+// TODO: FIgure out timezones
 date_default_timezone_set("America/New_York"); // use the timezone your session times are entered in
+
+// Configures and starts a PHP session
 session_set_cookie_params([
     "httponly" => true,
     "secure"   => !empty($_SERVER["HTTPS"]),
@@ -24,8 +29,10 @@ require_once "helpers/config.php";
 $message = "";
 
 // Checks the access code when the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST" && ($_SESSION["failed_attempts"] ?? 0) < 3) {
-    $passcode = trim($_POST["passcode"] ?? "");
+// if ($_SERVER["REQUEST_METHOD"] == "POST" && ($_SESSION["failed_attempts"] ?? 0) < 3) {
+//     $passcode = trim($_POST["passcode"] ?? "");
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $passcode = trim($_POST["passcode"]);
 
     $sessions = $conn->prepare(
         "SELECT Session_ID, Start_Date_Time, End_Date_Time
@@ -41,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && ($_SESSION["failed_attempts"] ?? 0) 
 
     if ($sessionResults->num_rows == 0) {
         $message = "Invalid access code.";
-        $_SESSION["failed_attempts"] = ($_SESSION["failed_attempts"] ?? 0) + 1;
+        // $_SESSION["failed_attempts"] = ($_SESSION["failed_attempts"] ?? 0) + 1;
     } else {
         $session = $sessionResults->fetch_assoc();
 
@@ -62,9 +69,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && ($_SESSION["failed_attempts"] ?? 0) 
         }
     }
 }
-if (($_SESSION["failed_attempts"] ?? 0) >= 3) {
-    $message = "Too many attempts. Please try again later.";
-}
+// if (($_SESSION["failed_attempts"] ?? 0) >= 3) {
+//     $message = "Too many attempts. Please try again later.";
+// }
 ?>
 
 <!DOCTYPE html>
@@ -80,7 +87,7 @@ if (($_SESSION["failed_attempts"] ?? 0) >= 3) {
     <div class="page">
         <div class="form">
             <h1>Hope Inspire Love Simulation</h1>
-            <p class="instructions">Enter the access code given.</p>
+            <p class="instructions">Enter the access code provided to you.</p>
 
             <?php if (!empty($message)): ?>
                 <div class="error" role="alert">
