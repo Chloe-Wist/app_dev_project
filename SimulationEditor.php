@@ -52,74 +52,69 @@ include("helpers/header.php");
 echo '<div class="page-container">';
 
 // Page Variables
-$user_id = $_SESSION['user_id'];
-$story_id;
+$version_id;
 $current_page; // current_page is the page is currently accessed
 
 // If a user clicked edit story from their dashboard
 if (isset($_GET['version_id'])) {
-    $story_id = $_GET['version_id'];
+    $version_id = $_GET['version_id'];
 }
-// If the page refreshed with a new prompts
-else if (isset($_GET['new_prompt'])) {
-    $query = "SELECT version_id FROM versions WHERE id = ".$_GET['new_prompt'];
+// If page id is set, get the version from it
+else if (isset($_GET['page_id'])) {
+    $query = "SELECT version_id FROM pages WHERE page_id = ".$_GET['page_id'];
     $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
-    $story_id = $result['version_id'];
+    $version_id = $result['version_id'];
+}
+// If the page refreshed with a new page
+else if (isset($_GET['new_page_id'])) {
+    $query = "SELECT version_id FROM pages WHERE page_id = ".$_GET['new_page_id'];
+    $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
+    $version_id = $result['version_id'];
 } // Else
 else {
     echo "<p class='fail'>Unknown story</p>";
     die;
 }
 
-// Tests that the user should have access to editing this story
-$query = "SELECT user_id FROM stories WHERE id = ".$story_id;
-$result = mysqli_fetch_assoc(mysqli_query($conn, $query));
-if ($result['user_id'] != $user_id) {
-    echo "<p class='fail'>You do not have access to this story</p>";
-    die;
-}
-
-
 
 // Handles form submission
-require("helpers/text_editor.php");   
+require("helpers/changes_handler.php");   
 
 
-// new_prompt is the prompt that the previous page sent as the prompt to be accessed next
-if (isset($_GET["new_prompt"])) {
-    $current_prompt = new Prompt ($_GET["new_prompt"], $story_id);
+// new_page is the page that the previous page sent to be accessed next
+if (isset($_GET["new_page_id"])) {
+    $current_page = new Page ($_GET["new_page_id"], $version_id);
 }
 else {
-    $current_prompt = new Prompt(-1, $story_id); // Default is first prompt
+    $current_page = new Page(-1, $version_id); // Default is first prompt
 }
 ?>
 
     <!-- Floating action buttons bottom-right: Back (blue) above Save (green) -->
         <div class="fab-container">
-            <button class="btn btn-green" type="submit" name="save_edits" form="edit_prompt">Save Edits</button>
+            <button type="submit" name="save_edits" form="edit_page">Save Edits</button>
         </div>
 
 <!-- Return to previous prompt button -->
 
     <?php 
         // This will print a link (or links) that will send a get variable with an attribute
-        // called new_prompt, which is the prompt that will be loaded if the link is clicked.
-        // new_prompt stores the id of the prompt to be loaded.
-        // It will create a link for each prompt that leads to this prompt via an action. 
-        if ($current_prompt->previous_prompts != null) { // If there is a prompt to go back to:
+        // called new_page_id, which is the id of the page that will be loaded if the link is clicked.
+        // It will create a link for each page that leads to this page via an action. 
+        if ($current_page->previous_pages != null) { // If there is a prompt to go back to:
             echo '<div class="card" id="return_links">';
-            foreach($current_prompt->previous_prompts as $p) {
-                // Creates a link that holds either the short name or the prompt id if no short name is provided
-                if ($p['prompt'] != $current_prompt->prompt_id) {
+            foreach($current_page->previous_pages as $p) {
+                // Creates a link that holds either the page name or the prompt id if no page name is provided
+                if ($p['page_id'] != $current_page->page_id) {
                     echo '
-                    <a href="CustomAdventureEditor.php?new_prompt='.($p['prompt']).'"
+                    <a href="SimulationEditor.php?new_page_id='.($p['page_id']).'"
                         class="btn btn-blue" name="return" >
-                        Go to Previous Prompt: '.
-                        ($p['short_name']?$p['short_name']:$p['prompt']).
+                        Go to Previous Page: '.
+                        ($p['page_name']?$p['page_name']:$p['page_id']).
                     '</a> ';
                 } 
                 else {
-                    echo "<p class='return_null'> This prompt leads to itself</p>";
+                    echo "<p class='return_null'> This page leads to itself</p>";
                 }
             }
             echo "</div>";
@@ -128,41 +123,55 @@ else {
 
 
 
-<!-- Creates a form to edit the prompt and its actions-->
+<!-- Creates a form to edit the page and its choices-->
 
-    <form method="POST" action="CustomAdventureEditor.php?new_prompt=<?=$current_prompt->prompt_id?>" id="edit_prompt">
+    <form method="POST" action="SimulationEditor.php?page_id=<?=$current_page->page_id?>" id="edit_page">
         <div class="card">
-        <h2>Prompt</h2>
+        <h2>Page</h2>
 
-        <!-- Prompt short name input -->
+        <!-- Page name input -->
         <h3>Name</h3>
-        <input type="text" name="short_name" value="<?php echo ($current_prompt->short_name); ?>">
+        <input type="text" name="page_name" value="<?php echo ($current_page->page_name); ?>">
 
 
-        <!--Sends the prompt id to be used for updating the database-->    
-        <input type="hidden" name="prompt_id" id="prompt_id" value="<?=$current_prompt->prompt_id?>">
+        <!--Sends the page id to be used for updating the database-->    
+        <input type="hidden" name="page_id" id="page_id" value="<?=$current_page->page_id?>">
     
-        <!-- Prompt description input -->    
-        <h3>Text</h3>
-        <textarea name="prompt" id="prompt"  
-            placeholder="Type here..."><?php echo ($current_prompt->prompt_description); ?></textarea>
-
-        <!--Prompt Flags -->
-        <h3>Flags</h3>
-        <input type="radio" id="not_flagged" name="flag" value="none"
-            <?=(($current_prompt->flag == 'none')?'checked':'')?>>None <br>
-        <input type="radio" id="flagged" name="flag" value="flagged"
-            <?=(($current_prompt->flag == 'flagged')?'checked':'')?>>Flagged <br><br>
-
-        <!-- Prompt Type -->
-        <input type="hidden" name="prompt_type" value="<?=$current_prompt->prompt_type?>">
-
-        <!--Prompt Deletion-->
-        <?php
-        // You can only delete a prompt if there are no actions under it
-        if ($current_prompt->actions == []) {
+        <!-- Page content -->    
+        <?php 
+        for ($i = 0; $i < count($current_page->content); $i++) {
             ?>
-            <button class="btn btn-red" type="submit"  name="delete_prompt" value="<?=$current_prompt->prompt_id?>">Delete prompt</button>
+        <h3>Page Content</h3>
+        <!-- Page content input --> 
+        <textarea name="page_content[<?=$i?>]"
+            placeholder="Type here..."><?php 
+            if ($current_page->content[$i]['page_content']) {
+                echo ($current_page->content[$i]['page_content']); 
+            }
+        ?></textarea>
+        <input type="hidden" name="page_content_id[<?=$i?>]"   
+            value=<?=$current_page->content[$i]['page_content_id']?>>
+
+        <!-- Page content deleting -->
+        <button type="submit" name="delete_content_id" 
+            value="<?=$current_page->content[$i]['page_content_id']?>">Delete Content</button>
+        
+        <?php
+        }
+        ?>
+        <!-- Page content adding -->
+        <button type="submit" name="new_content">Add Content</button>
+
+
+        <!-- Page Type -->
+        <input type="hidden" name="page_type" value="<?=$current_page->page_type?>">
+
+        <!-- Page Deletion-->
+        <?php
+        // You can only delete a page if there are no choices under it
+        if ($current_page->choices == []) {
+            ?>
+            <button class="btn btn-red" type="submit"  name="delete_page" value="<?=$current_page->page_id?>">Delete page</button>
             <?php
         }
         ?>
@@ -170,65 +179,60 @@ else {
 
         <?php
         ?>
-        <!--Action input-->
+        <!--Choice input-->
         <div class="card">
-        <h2>Actions</h2>
+        <h2>Choices</h2>
         <?php                                  
-            foreach ($current_prompt->actions as $i => $action):
-                if ($action instanceof Action) : ?>
+            foreach ($current_page->choices as $i => $choice):
+                if ($choice instanceof Choice) : ?>
                 <div class="card">
 
-                    <!-- Action ID --> 
-                        <input type="hidden" name="action_id[<?php echo $i; ?>]" 
-                            value="<?=$action->action_id?>">
+                    <!-- Choice ID --> 
+                        <input type="hidden" name="choice_id[<?php echo $i; ?>]" 
+                            value="<?=$choice->choice_id?>">
 
-                    <!--Action Title-->
-                        <h3>Action <?=$i + 1?></h3>
+                    <!--Choice Title-->
+                        <h3>Choice <?=$i + 1?></h3>
                         
                     <!-- Textbox for the Action -->
-                        <h5>Action Text</h5>
-                        <textarea name="action_text[<?php echo $i; ?>]" rows="3" placeholder="Action text..."><?php echo ($action->display_text); ?></textarea>
-                            <!--The name of the input holds the number that the action is stored in in the array-->   
+                        <h5>Choice Text</h5>
+                        <textarea name="choice_text[<?php echo $i; ?>]" rows="3" placeholder="Choice text..."><?php echo ($choice->text); ?></textarea>
+                            <!--The name of the input holds the number that the choice is stored in in the array-->   
+       
+                    <!--Next Page of Choice-->
+                        <h5>Next Page</h5>
 
-                    <!--Textbox for the consequence of the action-->
-                        <h5>Consequence Text</h5>
-                        <textarea name="action_consequence[<?php echo $i; ?>]" rows="3" placeholder="Consequence text..."><?php echo($action->consequence_text); ?></textarea>
-                            <!--The name of the input holds the number that the action is stored in in the array--> 
-                            
-                    <!--Destination of Action-->
-                        <h5>Destination</h5>
-
-                        <!--Displays current prompt this action leads to-->
+                        <!--Displays current page this choice leads to-->
                         <?php                            
-                            // Will store the default value (the id and shortname of the prompt) of the destination if it exists
+                            // Will store the default value (the id and name of the page) of the next page if it exists
                             $default; 
-                            if ($action->destination_prompt != null) { // If there is a destination prompt set
-                                // This query will retrieve the short_name and ID from the prompt that this action leads to
-                                $query = "SELECT short_name, prompts.id FROM prompts JOIN actions ON prompts.id = actions.consequence_prompt
-	                                WHERE actions.consequence_prompt = ".$action->destination_prompt;
+                            if ($choice->next_page_id != $current_page->page_id) { // If there is a next page set
+                                // This query will retrieve the name and ID from the page that this action leads to
+                                $query = "SELECT page_name, pages.page_id FROM pages JOIN choice ON pages.page_id = choice.page_id
+	                                WHERE choice.page_id = ".$choice->next_page_id;
                                 $default = mysqli_fetch_assoc(mysqli_query($conn, $query));
-                                echo "Current Destination: ".($default['short_name']?$default['short_name']:$default['id']);
+                                echo "Current Destination: ".(isset($default['page_name'])?$default['page_name']:$default['next_page_id']);
                             }
                             else {
                                 echo "No set destination.";
                             } 
                         ?>
 
-                        <!-- Drop down list of possible prompts the action can lead to -->
-                        <select name="destination[<?php echo $i; ?>]", > 
+                        <!-- Drop down list of possible pages the choice can lead to -->
+                        <select name="next_page_id[<?php echo $i; ?>]", > 
                             <?php 
-                            // Retrieves all the prompts that the user can select to create a drop down list of them
-                            $query = "SELECT id, short_name FROM prompts WHERE story_id = ".$story_id;
+                            // Retrieves all the pages that the user can select to create a drop down list of them
+                            $query = "SELECT page_id, page_name FROM pages WHERE version_id = ".$version_id;
                             $result = mysqli_query($conn, $query);
 
-                            // For each retrieved prompt:
+                            // For each retrieved page:
                             while ($a = mysqli_fetch_assoc($result)) {
-                                // If no short name was given, generic names will be given
-                                if ($a['short_name'] == null) {
-                                    echo "<option value='".$a['id']."'".($default['id'] == $a['id']?"selected":"")."> Untitled Prompt ".$a['id']." </option>";
+                                // If no name was given, generic names will be given
+                                if ($a['page_name'] == null) {
+                                    echo "<option value='".$a['page_id']."'".($default['page_id'] == $a['page_id']?"selected":"")."> Untitled Page ".$a['page_id']." </option>";
                                 }
                                 else {
-                                    echo "<option value='".$a['id']."'".($default['id'] == $a['id']?"selected":"").">".$a['short_name']."</option>";
+                                    echo "<option value='".$a['page_id']."'".($default['page_id'] == $a['page_id']?"selected":"").">".$a['page_name']."</option>";
                                 }
                             }
                             ?>
@@ -236,23 +240,23 @@ else {
                         <!-- https://stackoverflow.com/questions/76684999/how-can-i-make-a-drop-down-menu-in-html -->
 
 
-                    <!--Create a new prompt-->
-                        <!--Will create a new prompt for the action it was clicked from, and save all entered information -->
-                        <button class="btn" type="submit" name="new_prompt" value="<?=$action->action_id?>">Add new destination</button>
+                    <!--Create a new page-->
+                        <!--Will create a new page for the choice it was clicked from, and save all entered information -->
+                        <button class="btn" type="submit" name="new_page" value="<?=$choice->choice_id?>">Add new destination</button>
 
 
-                    <!--Creates a link to go to the prompt this action leads to-->
+                    <!--Creates a link to go to the page this action leads to-->
                         <?php 
-                        // If the action has a prompt that it leads to, a link will be created leading
-                        // to that prompt.
-                        if (isset($action->destination_prompt)) {
-                            // new_prompt is the prompt that the previous page sent as the prompt to be accessed next
-                            if ($action->destination_prompt == $current_prompt->prompt_id) {
-                                echo "<p>This prompt leads to itself</p>";
+                        // If the choice has a page that it leads to, a link will be created leading
+                        // to that page.
+                        if (isset($choice->next_page_id)) {
+                            // next_page_id is the page that the previous page sent to be accessed next
+                            if ($choice->next_page_id == $current_page->page_id) {
+                                echo "<p>No destination set</p>";
                             }
                             else {
-                                echo '<a href="CustomAdventureEditor.php?new_prompt='.$action->destination_prompt.'"
-                                    class="btn" name="new_prompt">
+                                echo '<a href="SimulationEditor.php?new_page_id='.$choice->next_page_id.'"
+                                    class="btn" name="new_page_id">
                                     Edit Destination
                                 </a>';
                             }
@@ -260,26 +264,25 @@ else {
                         ?>
 
                     <br>
-                    <!--Delete Action-->
-                    <button class="btn btn-red" type="submit" name="delete_action" value="<?=$action->action_id?>">Delete action</button>                        
+                    <!--Delete choice-->
+                    <button class="btn btn-red" type="submit" name="delete_choice_id" value="<?=$choice->choice_id?>">Delete choice</button>                        
                 </div>
                 <?php endif; 
             endforeach; ?>
         
-        <!--Create a new action-->
-        <button class="btn" type="submit" name="new_action">Create a new Action</button>
+        <!--Create a new choice-->
+        <button type="submit" name="new_choice">Create a new choice</button>
         </div>
 
         <!-- Saves the edits button -->
-        <input class="btn btn-green" type="submit" name="save_edits" id="save_edits" value="Save Edits">
+        <input type="submit" name="save_edits" value="Save Edits">
         
     </form>
 
     <div class="card" id="editor_nav_bar">
     <!--Creates a pop up bar on the side to navigate to different prompts-->
-    <?php require("helpers/text_navigation.php");?>
+    <?php require("helpers/text_navigation.php");?> 
     </div>
 </div>
-<?php include("helpers/footer.php"); ?>
 </body>
 </html>

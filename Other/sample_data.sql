@@ -113,3 +113,19 @@ VALUES (4, 1);
 
 INSERT INTO Simulation_to_Session (Session_ID, Simulation_ID)
 VALUES (4, 2);
+
+
+-- Simulation data
+INSERT INTO industry (industry_name) VALUES ('General');
+
+INSERT INTO simulation (simulation_description, industry_id)
+VALUES ('General simulation', 1);
+
+INSERT INTO version (simulation_id, is_published, version_language)
+VALUES (1, 'Unpublished', 'English');
+
+INSERT INTO pages (version_id, page_type)
+VALUEs (1, 'start')
+
+
+

@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS Version (
 CREATE TABLE IF NOT EXISTS Pages (
     Page_ID INT PRIMARY KEY AUTO_INCREMENT,
     Version_ID INT NOT NULL,
-    Page_Name VARCHAR(100) NOT NULL,
-    Type ENUM('Start', 'End', 'None') DEFAULT 'None',
+    Page_Name VARCHAR(100),
+    page_type ENUM('Start', 'End', 'None') DEFAULT 'None',
 
     -- Foreign Keys
     FOREIGN KEY (Version_ID) REFERENCES Version(Version_ID)
@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS Page_Content (
     Page_ID INT NOT NULL,
     -- !: Using JSON instead of BLOB as storing a combination of images, text and videos would cause problems with the database.
     -- This also lets us be able to search for videos, images, etc. in the database by using JSON_EXTRACT() or ->> shortcut
-    Page_Content JSON NOT NULL,
+    Page_Content TEXT, -- Change to JSON later
 
     -- Foreign Keys
     FOREIGN KEY (Page_ID) REFERENCES Pages(Page_ID)
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS Page_Content (
 CREATE TABLE IF NOT EXISTS Choice (
     Choice_ID INT AUTO_INCREMENT PRIMARY KEY,
     Page_ID INT NOT NULL,
-    Choice_Text TEXT NOT NULL,
+    Choice_Text TEXT NOT NULL, -- Change to JSON later
     Next_Page_ID INT NOT NULL,
 
     -- Foreign Keys
