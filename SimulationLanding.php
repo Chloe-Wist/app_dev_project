@@ -6,6 +6,7 @@
  * that allows users to enter an access code to access the simulation.
  * 
  * TODO: Add external access request form URL
+ * TODO: Add header and footer from HIL website
 */
 
 // Starts a PHP session
