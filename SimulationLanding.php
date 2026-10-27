@@ -10,6 +10,12 @@
 */
 
 // Starts a PHP session
+date_default_timezone_set("America/New_York"); // use the timezone your session times are entered in
+session_set_cookie_params([
+    "httponly" => true,
+    "secure"   => !empty($_SERVER["HTTPS"]),
+    "samesite" => "Lax"
+]);
 session_start();
 
 // Connects to database
@@ -18,8 +24,8 @@ require_once "helpers/config.php";
 $message = "";
 
 // Checks the access code when the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $passcode = trim($_POST["passcode"]);
+if ($_SERVER["REQUEST_METHOD"] == "POST" && ($_SESSION["failed_attempts"] ?? 0) < 3) {
+    $passcode = trim($_POST["passcode"] ?? "");
 
     $sessions = $conn->prepare(
         "SELECT Session_ID, Start_Date_Time, End_Date_Time
@@ -31,9 +37,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sessions->execute();
 
     $sessionResults = $sessions->get_result();
+    $sessions->close();
 
     if ($sessionResults->num_rows == 0) {
         $message = "Invalid access code.";
+        $_SESSION["failed_attempts"] = ($_SESSION["failed_attempts"] ?? 0) + 1;
     } else {
         $session = $sessionResults->fetch_assoc();
 
@@ -54,6 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+if (($_SESSION["failed_attempts"] ?? 0) >= 3) {
+    $message = "Too many attempts. Please try again later.";
+}
 ?>
 
 <!DOCTYPE html>
@@ -69,9 +80,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="page">
         <div class="form">
             <h1>Hope Inspire Love Simulation</h1>
+            <p class="instructions">Enter the access code given.</p>
 
             <?php if (!empty($message)): ?>
-                <div class="error">
+                <div class="error" role="alert">
                     <?php echo htmlspecialchars($message); ?>
                 </div>
             <?php endif; ?>
@@ -83,11 +95,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     id="passcode"
                     name="passcode"
                     required
+                    autofocus
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
                     placeholder="Enter your access code"
                 >
                 
                 <!-- TODO: Replace with external access request form URL -->
-                <a href="#" class="request-access">Request Access</a>
+                <a href="#" class="request-access" target="_blank" rel="noopener noreferrer">Request Access</a>
 
                 <button class="button-primary" type="submit">
                     Continue
