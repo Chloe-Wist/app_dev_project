@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS Simulation_to_Session (
 CREATE TABLE IF NOT EXISTS Version (
     Version_ID INT AUTO_INCREMENT PRIMARY KEY,
     Simulation_ID INT NOT NULL,
-    Title text Not Null,
+    Title text ,
     Is_Published ENUM('Published','Unpublished') NOT NULL,
     Creation_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Last_Edited_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
