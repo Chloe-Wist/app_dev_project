@@ -13,13 +13,31 @@ require_once "helpers/config.php";
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $user_id = (int) $_SESSION['user_id'];
 
-function owns_story(mysqli $conn, int $story_id, int $user_id): bool {
-    $stmt = $conn->prepare("SELECT 1 FROM stories WHERE id = ? AND user_id = ?");
-    $stmt->bind_param("ii", $story_id, $user_id);
+function user_can_manage(mysqli $conn, int $user_id): bool {
+    $stmt = $conn->prepare(
+        "SELECT 1 FROM Users u
+         JOIN Roles r ON r.Role_ID = u.Role_ID
+         WHERE u.User_ID = ? AND r.Role_Name IN ('Owner', 'Admin')"
+    );
+    $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $owns = $stmt->get_result()->num_rows > 0;
+    $ok = $stmt->get_result()->num_rows > 0;
     $stmt->close();
-    return $owns;
+    return $ok;
+}
+
+function simulation_exists(mysqli $conn, int $simulation_id): bool {
+    $stmt = $conn->prepare("SELECT 1 FROM Simulation WHERE Simulation_ID = ?");
+    $stmt->bind_param("i", $simulation_id);
+    $stmt->execute();
+    $ok = $stmt->get_result()->num_rows > 0;
+    $stmt->close();
+    return $ok;
+}
+
+if (!user_can_manage($conn, $user_id)) {
+    http_response_code(403);
+    exit('You do not have permission to manage simulations.');
 }
 
 if (empty($_SESSION['csrf_token'])) {
@@ -60,7 +78,7 @@ $story_list = [];
     </head>
     <body>
 
-    <?php include("helpers/navbar.php")?>
+    <?php include("helpers/header.php")?>
 
         <div class="page-container">
             <div class="row">
@@ -72,18 +90,26 @@ $story_list = [];
     if (isset($_POST['save_edits']) && isset($_POST['story_id'])) {
         foreach ($_POST['story_id'] as $i => $raw_id) {
             $id = (int) $raw_id;
-            $story_title = trim($_POST['story_title'][$i] ?? "");
-            $public = isset($_POST['public'][$i]) ? 1 : 0;
+            $description = trim($_POST['story_title'][$i] ?? "");
+            $published = isset($_POST['public'][$i]) ? 'Published' : 'Unpublished';
 
-            try {
-                $stmt = $conn->prepare(
-                    "UPDATE stories SET story_title = ?, public = ? WHERE id = ? AND user_id = ?"
-                );
-                $stmt->bind_param("siii", $story_title, $public, $id, $user_id);
-                $stmt->execute();
-                $stmt->close();
-                echo "<p class='success'>Story " . ((int) $i + 1) . " Updated</p>";
+        try {
+            $conn->begin_transaction();
+
+            $stmt = $conn->prepare("UPDATE Simulation SET Simulation_Description = ? WHERE Simulation_ID = ?");
+            $stmt->bind_param("si", $description, $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("UPDATE Version SET Is_Published = ? WHERE Simulation_ID = ?");
+            $stmt->bind_param("si", $published, $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->commit();
+            echo "<p class='success'>Simulation " . ((int) $i + 1) . " Updated</p>";
             } catch (Exception $e) {
+                $conn->rollback();
                 echo "<p class='fail'>Story " . ((int) $i + 1) . " Failed to Update</p>";
             }
         }
@@ -91,19 +117,28 @@ $story_list = [];
 
     // Creates Story
     if (isset($_POST['create_story'])) {
+    $industry_id = (int) ($_POST['industry_id'] ?? 0);
     try {
         $conn->begin_transaction();
 
-        $stmt = $conn->prepare("INSERT INTO stories (user_id) VALUES (?)");
-        $stmt->bind_param("i", $user_id);
+        $stmt = $conn->prepare("INSERT INTO Simulation (Industry_ID) VALUES (?)");
+        $stmt->bind_param("i", $industry_id);
         $stmt->execute();
-        $new_story_id = $conn->insert_id;
+        $new_simulation_id = $conn->insert_id;
         $stmt->close();
 
         $stmt = $conn->prepare(
-            "INSERT INTO prompts (prompt, prompt_type, story_id) VALUES ('Story Start', 'start', ?)"
+            "INSERT INTO Version (Simulation_ID, Is_Published, Version_Language) VALUES (?, 'Unpublished', 'English')"
         );
-        $stmt->bind_param("i", $new_story_id);
+        $stmt->bind_param("i", $new_simulation_id);
+        $stmt->execute();
+        $new_version_id = $conn->insert_id;
+        $stmt->close();
+
+        $stmt = $conn->prepare(
+            "INSERT INTO Pages (Version_ID, Page_Name, page_type) VALUES (?, 'Start', 'Start')"
+        );
+        $stmt->bind_param("i", $new_version_id);
         $stmt->execute();
         $stmt->close();
 
@@ -118,8 +153,13 @@ $story_list = [];
     // Delete Story
     if(isset($_POST['delete_story_start'])) {
         $id = (int) $_POST['delete_story_start'];
-        $stmt = $conn->prepare("SELECT story_title FROM stories WHERE id = ? AND user_id = ?");
-        $stmt->bind_param("ii", $id, $user_id);
+        $stmt = $conn->prepare(
+            "SELECT s.Simulation_Description, i.Industry_Name
+            FROM Simulation s
+            JOIN Industry i ON i.Industry_ID = s.Industry_ID
+            WHERE s.Simulation_ID = ?"
+        );
+        $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
@@ -132,7 +172,7 @@ $story_list = [];
             <p class='warning'>Are you sure you want to delete this story? 
                 Deleted stories cannot be recovered.<br>
                 Story ID: <?=$id?><br>
-                <?=($result['story_title'] ? 'Story Title: '.htmlspecialchars($result['story_title']).'<br>' : '')?>
+                Simulation: <?= htmlspecialchars($result['Industry_Name']) ?><br>
                 </p>
             <input type="radio" name="delete_story" value="<?=$id?>">
             Yes, delete this story.<br>
@@ -150,15 +190,22 @@ $story_list = [];
         if ($story_id !== 'cancel') {
             $story_id = (int) $story_id;
 
-            if (!owns_story($conn, $story_id, $user_id)) {
+            if (!simulation_exists($conn, $story_id)) {
                 echo "<p class='fail'>Failed to Delete Story</p>";
             } else {
                 try {
                     $conn->begin_transaction();
+                    $pages = "SELECT p.Page_ID FROM Pages p
+                        JOIN Version v ON v.Version_ID = p.Version_ID
+                        WHERE v.Simulation_ID = ?";
                     $statements = [
-                        "DELETE FROM prompts WHERE story_id = ?",
-                        "DELETE FROM actions WHERE story_id = ?",
-                        "DELETE FROM stories WHERE id = ?"
+                        "DELETE FROM Choice WHERE Page_ID IN ($pages)",
+                        "DELETE FROM Choice WHERE Next_Page_ID IN ($pages)",
+                        "DELETE FROM Page_Content WHERE Page_ID IN ($pages)",
+                        "DELETE FROM Pages WHERE Version_ID IN (SELECT Version_ID FROM Version WHERE Simulation_ID = ?)",
+                        "DELETE FROM Version WHERE Simulation_ID = ?",
+                        "DELETE FROM Simulation_to_Session WHERE Simulation_ID = ?",
+                        "DELETE FROM Simulation WHERE Simulation_ID = ?"
                     ];
                     foreach ($statements as $sql) {
                         $stmt = $conn->prepare($sql);
@@ -181,8 +228,9 @@ $story_list = [];
     // Play story
     if (isset($_POST['play_story'])) {
         $id = (int) $_POST['play_story'];
-        if (owns_story($conn, $id, $user_id)) {
-            header("Location: text_adventure.php?story_id=" . $id);
+        if (simulation_exists($conn, $id)) {
+            // POTENTIALLY DEAD LINK; INSPECT LATER
+            header("Location: simulation_page.php?version_id=" . $id);
             exit;
         }
     }
@@ -190,16 +238,23 @@ $story_list = [];
     // Edit story
     if (isset($_POST['edit_story'])) {
         $id = (int) $_POST['edit_story'];
-        if (owns_story($conn, $id, $user_id)) {
-            header("Location: CustomAdventureEditor.php?story_id=" . $id);
+        if (simulation_exists($conn, $id)) {
+            // POTENTIALLY DEAD LINK; INSPECT LATER
+            header("Location: SimulationEditor.php?version_id=" . $id);
             exit;
         }
     }
 
-    $stmt = $conn->prepare("SELECT id, story_title, public FROM stories WHERE user_id = ? ORDER BY id");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $story_list = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt = $conn->prepare(
+    "SELECT s.Simulation_ID AS id,
+        s.Simulation_Description AS story_title,
+        i.Industry_Name,
+        EXISTS (SELECT 1 FROM Version v
+            WHERE v.Simulation_ID = s.Simulation_ID
+            AND v.Is_Published = 'Published') AS public
+    FROM Simulation s
+    JOIN Industry i ON i.Industry_ID = s.Industry_ID
+    ORDER BY s.Simulation_ID");
     $stmt->close();
     ?>
 
@@ -219,9 +274,10 @@ $story_list = [];
         <!--Story ID-->
             <p> Story ID: <?php echo $story["id"]; ?> </p>
             <input type="hidden" name="story_id[<?php echo $i; ?>]" value="<?=$story["id"]?>">
-        <!--Story Title-->
+            <p> Industry: <?php echo htmlspecialchars($story["Industry_Name"]); ?> </p>
+            <!--Story Title-->
             <p> Story Title:
-                <input type="text" name="story_title[<?php echo $i; ?>]" value="<?php echo ($story["story_title"]); ?>">
+                <input type="text" name="story_title[<?php echo $i; ?>]"   value="<?php echo htmlspecialchars($story["story_title"] ?? ""); ?>">
             </p>
 
         <!--Public vs Private Setting-->
@@ -263,8 +319,4 @@ $story_list = [];
 
 
 </html>
-
-
-
-
 
