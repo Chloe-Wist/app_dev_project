@@ -24,7 +24,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Ensures correct access
 if ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Owner') {
-    header("UserDashboard.php");
+    header("Location: UserDashboard.php");
     exit;
 }
 
@@ -63,7 +63,23 @@ if (isset($_GET['version_id'])) {
 else if (isset($_GET['page_id'])) {
     $query = "SELECT version_id FROM pages WHERE page_id = ".$_GET['page_id'];
     $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
-    $version_id = $result['version_id'];
+    if (isset($result)) {
+        $version_id = $result['version_id'];
+        $query = "SELECT page_id FROM pages WHERE page_type = 'Start' AND version_id =".$version_id;
+        $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
+        if (isset($result)) {
+            $page_id = $result['page_id'];
+        }
+        else {
+            header("Location: SimulationManagement.php");
+            exit();
+        }
+    }
+    // If this page number and version id are not found redirect to simulation management page
+    else {
+        header("Location: SimulationManagement.php");
+        exit();
+    }   
 }
 // If the page refreshed with a new page
 else if (isset($_GET['new_page_id'])) {
@@ -77,7 +93,7 @@ else {
 }
 
 
-// Handles form submission
+// Handles saving edits
 require("helpers/changes_handler.php");   
 
 
@@ -85,8 +101,11 @@ require("helpers/changes_handler.php");
 if (isset($_GET["new_page_id"])) {
     $current_page = new Page ($_GET["new_page_id"], $version_id);
 }
+else if ($_GET['page_id']) {
+    $current_page = new Page ($_GET['page_id'], $version_id);
+}
 else {
-    $current_page = new Page(-1, $version_id); // Default is first prompt
+    $current_page = new Page (-1, $version_id); // Default is first prompt
 }
 ?>
 
@@ -114,7 +133,7 @@ else {
                     '</a> ';
                 } 
                 else {
-                    echo "<p class='return_null'> This page leads to itself</p>";
+                    echo "<p class='return_null'> This page has no destination</p>";
                 }
             }
             echo "</div>";
@@ -169,9 +188,10 @@ else {
         <!-- Page Deletion-->
         <?php
         // You can only delete a page if there are no choices under it
-        if ($current_page->choices == []) {
+        // and it is not the start page
+        if ($current_page->choices == [] && $current_page->page_type != 'Start') {
             ?>
-            <button class="btn btn-red" type="submit"  name="delete_page" value="<?=$current_page->page_id?>">Delete page</button>
+            <button class="btn btn-red" type="submit"  name="delete_page_id" value="<?=$current_page->page_id?>">Delete page</button>
             <?php
         }
         ?>
@@ -205,38 +225,56 @@ else {
                         <!--Displays current page this choice leads to-->
                         <?php                            
                             // Will store the default value (the id and name of the page) of the next page if it exists
-                            $default; 
+                            
+                            // This query will retrieve the name and ID from the page that this action leads to
+                            $query = "SELECT page_name, pages.page_id FROM pages JOIN choice ON pages.page_id = choice.next_page_id
+                                WHERE choice.next_page_id = ".$choice->next_page_id;
+                            $default = mysqli_fetch_assoc(mysqli_query($conn, $query));
                             if ($choice->next_page_id != $current_page->page_id) { // If there is a next page set
-                                // This query will retrieve the name and ID from the page that this action leads to
-                                $query = "SELECT page_name, pages.page_id FROM pages JOIN choice ON pages.page_id = choice.page_id
-	                                WHERE choice.page_id = ".$choice->next_page_id;
-                                $default = mysqli_fetch_assoc(mysqli_query($conn, $query));
-                                echo "Current Destination: ".(isset($default['page_name'])?$default['page_name']:$default['next_page_id']);
+                                echo "Current Destination: ".(isset($default['page_name'])?$default['page_name']:$default['page_id']);
                             }
                             else {
                                 echo "No set destination.";
                             } 
                         ?>
 
+                        <!-- Next Page ID -->
+                        <input type="hidden" name="next_page_id[<?=$i?>]" value ="<?=$choice->next_page_id?>">
+
+
                         <!-- Drop down list of possible pages the choice can lead to -->
-                        <select name="next_page_id[<?php echo $i; ?>]", > 
                             <?php 
                             // Retrieves all the pages that the user can select to create a drop down list of them
-                            $query = "SELECT page_id, page_name FROM pages WHERE version_id = ".$version_id;
+                            $query = "SELECT page_id, page_name FROM pages WHERE version_id = ".$version_id."
+                                AND page_id != ".$current_page->page_id;
                             $result = mysqli_query($conn, $query);
+                            $options = [];
 
-                            // For each retrieved page:
                             while ($a = mysqli_fetch_assoc($result)) {
                                 // If no name was given, generic names will be given
                                 if ($a['page_name'] == null) {
-                                    echo "<option value='".$a['page_id']."'".($default['page_id'] == $a['page_id']?"selected":"")."> Untitled Page ".$a['page_id']." </option>";
+                                    $options[] = "<option value='".$a['page_id']."' ".($default['page_id'] 
+                                        == $a['page_id']?"selected":"")."> Untitled Page </option>";
                                 }
                                 else {
-                                    echo "<option value='".$a['page_id']."'".($default['page_id'] == $a['page_id']?"selected":"").">".$a['page_name']."</option>";
+                                    $options[] = "<option value='".$a['page_id']."' ".($default['page_id'] 
+                                        == $a['page_id']?"selected":"").">".$a['page_name']."</option>";
                                 }
                             }
-                            ?>
-                        </select>
+
+                            $options[] = "<option value='".$current_page->page_id."' ".($default['page_id'] 
+                                        == $current_page->page_id?"selected":"")."> None Selected </option>";
+
+                            if ($options) { ?>
+                                <select name="next_page_id[<?php echo $i; ?>]", > 
+                                <?php 
+                                    foreach ($options as $o) {
+                                        echo $o;
+                                    }
+                                ?>
+                            
+                                </select>
+                            <?php } ?>
                         <!-- https://stackoverflow.com/questions/76684999/how-can-i-make-a-drop-down-menu-in-html -->
 
 
@@ -251,10 +289,7 @@ else {
                         // to that page.
                         if (isset($choice->next_page_id)) {
                             // next_page_id is the page that the previous page sent to be accessed next
-                            if ($choice->next_page_id == $current_page->page_id) {
-                                echo "<p>No destination set</p>";
-                            }
-                            else {
+                            if ($choice->next_page_id != $current_page->page_id) {
                                 echo '<a href="SimulationEditor.php?new_page_id='.$choice->next_page_id.'"
                                     class="btn" name="new_page_id">
                                     Edit Destination

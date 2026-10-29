@@ -19,7 +19,7 @@ class Choice {
 
         // Sets the variables to store the information from the database
         $text = isset($result['Choice_Text'])?$result['Choice_Text']:"";
-        $destination = isset($result['Next_Page_ID'])?$result['Next_Page_ID']:-1;
+        $destination = $result['Next_Page_ID'];
         $parent = $result['Page_ID'];
 
 

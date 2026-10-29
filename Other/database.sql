@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS Pages (
     Page_ID INT PRIMARY KEY AUTO_INCREMENT,
     Version_ID INT NOT NULL,
     Page_Name VARCHAR(100),
-    page_type ENUM('Start', 'End', 'None') DEFAULT 'None',
+    page_type ENUM('Start', 'End', 'None', 'Orphaned') DEFAULT 'None',
 
     -- Foreign Keys
     FOREIGN KEY (Version_ID) REFERENCES Version(Version_ID)
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS Choice (
     Choice_ID INT AUTO_INCREMENT PRIMARY KEY,
     Page_ID INT NOT NULL,
     Choice_Text TEXT NOT NULL, -- Change to JSON later
-    Next_Page_ID INT NOT NULL,
+    Next_Page_ID INT,
 
     -- Foreign Keys
     FOREIGN KEY (Next_Page_ID) REFERENCES Pages(Page_ID),

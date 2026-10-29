@@ -8,7 +8,7 @@ echo "<ul class='action-list card'>";
 
 while($a = mysqli_fetch_assoc($result)) {
     echo "<li><a href='SimulationEditor.php?new_page_id=".$a['page_id']."'
-        >".($a['page_name']?$a['page_name']:"Untitled Page ".$a['page_id'])."</a>";
+        >".($a['page_name']?$a['page_name']:"Untitled Page ")."</a>";
     echo "</li><br>";
 }
 echo "</ul>";

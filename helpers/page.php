@@ -35,9 +35,7 @@ class Page {
         $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
 
         if (!isset($result['page_id'])) { 
-                // The prompt_type column is not null, so a null page_type means that there is
-                // no entry for this page id.
-            $query = "SELECT page_id FROM pages WHERE page_type = 'start' AND version_id =".$version_id;
+            $query = "SELECT page_id FROM pages WHERE page_type = 'Start' AND version_id =".$version_id;
             $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
             $page_id = $result['page_id'];
         }
