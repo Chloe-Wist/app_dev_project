@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS Simulation_to_Session (
 CREATE TABLE IF NOT EXISTS Version (
     Version_ID INT AUTO_INCREMENT PRIMARY KEY,
     Simulation_ID INT NOT NULL,
-    Title text ,
+    Version_Title text,
     Is_Published ENUM('Published','Unpublished') NOT NULL,
     Creation_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Last_Edited_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS Pages (
     Page_ID INT PRIMARY KEY AUTO_INCREMENT,
     Version_ID INT NOT NULL,
     Page_Name VARCHAR(100),
-    page_type ENUM('Start', 'End', 'None', 'Orphaned') DEFAULT 'None',
+    page_type ENUM('Start', 'End', 'Middle', 'Orphaned') DEFAULT 'Middle',
 
     -- Foreign Keys
     FOREIGN KEY (Version_ID) REFERENCES Version(Version_ID)

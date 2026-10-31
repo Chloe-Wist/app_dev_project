@@ -84,7 +84,7 @@ if (isset($_POST['page_id']) && !isset($_POST['delete_page'])) {
 // Creates a new choice
 if (isset($_POST['new_choice'])) {
     if ($_POST['page_type'] == 'End') {
-        $query = 'UPDATE pages SET page_type = "none" WHERE page_id = '.$_POST['page_id'];
+        $query = 'UPDATE pages SET page_type = "Middle" WHERE page_id = '.$_POST['page_id'];
         try {
             mysqli_query($conn, $query);
         }

@@ -101,7 +101,7 @@ require("helpers/changes_handler.php");
 if (isset($_GET["new_page_id"])) {
     $current_page = new Page ($_GET["new_page_id"], $version_id);
 }
-else if ($_GET['page_id']) {
+else if (isset($_GET['page_id'])) {
     $current_page = new Page ($_GET['page_id'], $version_id);
 }
 else {
