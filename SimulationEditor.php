@@ -5,11 +5,6 @@
  * This file will create an interactive page that allows users to create and update
  * their own custom simulation. 
 */
-
-
-// Basic session hardening (set early)
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_secure', 1);
     
 // Ensure session is started for consistent session usage
 if (session_status() === PHP_SESSION_NONE) {
@@ -18,7 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Require login to access editor
 if (!isset($_SESSION['user_id'])) {
-    header('Location: loginPage.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -55,7 +50,7 @@ echo '<div class="page-container">';
 $version_id;
 $current_page; // current_page is the page is currently accessed
 
-// If a user clicked edit story from their dashboard
+// If a user clicked edit story from the simulation management page
 if (isset($_GET['version_id'])) {
     $version_id = $_GET['version_id'];
 }
