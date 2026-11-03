@@ -230,6 +230,7 @@ CREATE TABLE IF NOT EXISTS Event_Signup (
     Event_ID INT NOT NULL,
     User_ID INT NOT NULL,
     Status ENUM('Yes','Maybe','No','No Reply') NOT NULL DEFAULT('No Reply'),
+    Is_Invited BOOLEAN NOT NULL DEFAULT FALSE,
 
     PRIMARY KEY (Event_ID, User_ID),
 

@@ -12,7 +12,7 @@
 */
 
 // Sets the timezone used for date and time operations
-// TODO: FIgure out timezones
+// TODO: Figure out timezones
 date_default_timezone_set("America/New_York"); // use the timezone your session times are entered in
 
 // Configures and starts a PHP session
