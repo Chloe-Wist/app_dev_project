@@ -122,7 +122,7 @@ INSERT INTO simulation (simulation_description, industry_id)
 VALUES ('General simulation', 1);
 
 INSERT INTO version (simulation_id, is_published, version_language)
-VALUES (1, 'Unpublished', 'English');
+VALUES (1, 'Published', 'English');
 
 INSERT INTO version (simulation_id, is_published, version_language)
 VALUES (1, 'Unpublished', 'Twang');
@@ -132,4 +132,5 @@ VALUEs (1, 'start');
 
 INSERT INTO pages (version_id, page_type)
 VALUEs (2, 'start')
+
 
