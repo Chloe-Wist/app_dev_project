@@ -78,7 +78,10 @@ $story_list = [];
     </head>
     <body>
 
-    <?php include("helpers/header.php")?>
+    <?php 
+    $title = "Simulation Management";
+    include("helpers/header.php")
+    ?>
 
         <div class="page-container">
             <div class="row">
