@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS Sessions (
 
     -- Foreign Keys
     FOREIGN KEY (Created_By) REFERENCES Users(User_ID),
-    Foreign Key (Event_ID) references Event(Event_ID)
+    FOREIGN KEY (Event_ID) REFERENCES event(Event_ID)
 );
 
 CREATE TABLE IF NOT EXISTS Analytics (

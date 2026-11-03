@@ -15,8 +15,9 @@
 
     // Ensures the session is open
     $query = "SELECT Start_Date_Time, End_Date_Time
-         FROM Sessions
-         WHERE session_id = ".$_SESSION['session_id'];
+         FROM Sessions JOIN version
+         WHERE session_id = ".$_SESSION['session_id']
+         ." AND is_published = 'Published'";
     $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
 
     $currentTime = new DateTime();
@@ -69,9 +70,10 @@
 
     // Queries the database for the page content that matches the current page
     $query = "SELECT page_content FROM page_content WHERE page_id = ".$page_id;
+    $result = mysqli_query($conn, $query);
     // Queries the database, fetches the retrived table, stores the prompt value from the table
-    while(mysqli_fetch_assoc(mysqli_query($conn, $query))['page_content'] = $text) {
-        echo ("<div class='card'><p>".$text."</p></div>");
+    while($text = mysqli_fetch_assoc($result)) {
+        echo ("<div class='card'><p>".$text['page_content']."</p></div>");
     }
 
     // Prints the choices----------------------------------------------------------------------------------
@@ -84,19 +86,19 @@
     
     echo "<ul class='choice'>"; // Starts an unordered list
     // Goes through each row of the returned table
-    while ($action = mysqli_fetch_assoc($result)) {
+    while ($choice = mysqli_fetch_assoc($result)) {
         // Creates a link to lead to the next page by sending the page id for the
         // next page
-        $a = $action['next_page_id'];
+        $a = $choice['next_page_id'];
         // If there is no further prompt the action leads to
         if ($a == $page_id) {
             $href = "";
         }
         else {
-            $href = "SimulationPage.php?page_id=".$a['choice_text'];
+            $href = "SimulationPage.php?page_id=".$a;
         }
         
-        echo "<li><a href='".$href."'>".$choice['']."</a></li>";
+        echo "<li><a href='".$href."'>".$choice['choice_text']."</a></li>";
     }
     echo "</ul>"; // ends the list
 
