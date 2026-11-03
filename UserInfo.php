@@ -9,7 +9,7 @@
 // Connect to the database
 require_once "helpers/config.php";
 
-// If there is no session, start it
+// Starts a PHP session if one has not already been started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
