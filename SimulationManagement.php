@@ -78,7 +78,10 @@ $story_list = [];
     </head>
     <body>
 
-    <?php include("helpers/header.php")?>
+    <?php 
+    $title = "Simulation Management";
+    include("helpers/header.php")
+    ?>
 
         <div class="page-container">
             <div class="row">
@@ -313,7 +316,7 @@ $story_list = [];
         <button class="btn btn-green" type="submit" name="save_edits" form="user_stories_form">Save Edits</button>
     </div>
 
-    <?php include("helpers/footer.php"); ?>
+    <!-- php include("helpers/footer.php"); -->
     </body>
 
 

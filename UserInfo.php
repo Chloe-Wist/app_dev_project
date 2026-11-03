@@ -9,7 +9,7 @@
 // Connect to the database
 require_once "helpers/config.php";
 
-// If there is no session, start it
+// Starts a PHP session if one has not already been started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -73,6 +73,7 @@ function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <head>
         <title> User Info </title>
         <link rel="stylesheet" href="styles/main.css">
+        <link rel="stylesheet" href="styles/userinfo.css">
         <style>
             .profile-photo { width: 120px; height: 120px; border-radius: 50%;
                              border: 4px solid #000; background: #ddd; object-fit: cover;
