@@ -35,6 +35,15 @@ function simulation_exists(mysqli $conn, int $simulation_id): bool {
     return $ok;
 }
 
+function first_version_id(mysqli $conn, int $simulation_id): ?int {
+    $stmt = $conn->prepare("SELECT MIN(Version_ID) AS v FROM Version WHERE Simulation_ID = ?");
+    $stmt->bind_param("i", $simulation_id);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $row && $row['v'] !== null ? (int) $row['v'] : null;
+}
+
 if (!user_can_manage($conn, $user_id)) {
     http_response_code(403);
     exit('You do not have permission to manage simulations.');
@@ -50,6 +59,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'
     exit('Invalid request. Please go back and try again.');
 }
 
+$action_error = "";
+
+if (isset($_POST['create_story'])) {
+    $industry_id = (int) ($_POST['industry_id'] ?? 0);
+    try {
+        $conn->begin_transaction();
+
+        $stmt = $conn->prepare("INSERT INTO Simulation (Industry_ID) VALUES (?)");
+        $stmt->bind_param("i", $industry_id);
+        $stmt->execute();
+        $new_simulation_id = $conn->insert_id;
+        $stmt->close();
+
+        $stmt = $conn->prepare(
+            "INSERT INTO Version (Simulation_ID, Is_Published, Version_Language) VALUES (?, 'Unpublished', 'English')"
+        );
+        $stmt->bind_param("i", $new_simulation_id);
+        $stmt->execute();
+        $new_version_id = $conn->insert_id;
+        $stmt->close();
+
+        $stmt = $conn->prepare(
+            "INSERT INTO Pages (Version_ID, Page_Name, page_type) VALUES (?, 'Start', 'Start')"
+        );
+        $stmt->bind_param("i", $new_version_id);
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+        header("Location: SimulationEditor.php?version_id=" . $new_version_id);
+        exit;
+    } catch (Exception $e) {
+        $conn->rollback();
+        $action_error = "Failed to create simulation. Choose an industry that doesn't have one yet.";
+    }
+}
+
+if (isset($_POST['play_story'])) {
+    $vid = first_version_id($conn, (int) $_POST['play_story']);
+    if ($vid !== null) {
+        header("Location: simulation_page.php?version_id=" . $vid);
+        exit;
+    }
+    $action_error = "That simulation has no version to play.";
+}
+
+if (isset($_POST['edit_story'])) {
+    $vid = first_version_id($conn, (int) $_POST['edit_story']);
+    if ($vid !== null) {
+        header("Location: SimulationEditor.php?version_id=" . $vid);
+        exit;
+    }
+    $action_error = "That simulation has no version to edit.";
+}
+
 // Variable Declaration
 $story_list = [];
     // This array holds the ID of all the stories the user has.
@@ -63,7 +127,7 @@ $story_list = [];
 // The id will be displayed for each story so that people can share each other's ID's for public story searching.
 
 
-//Additionally, there is a New Story button. When pressed, it takes you straight to the editor. (With a new story added to the database.)
+// Additionally, there is a New Story button. When pressed, it takes you straight to the editor. (With a new story added to the database.)
 
 ?>
 
@@ -80,7 +144,7 @@ $story_list = [];
 
     <?php 
     $title = "Simulation Management";
-    include("helpers/header.php")
+    include("helpers/header.php");
     ?>
 
         <div class="page-container">
@@ -118,40 +182,9 @@ $story_list = [];
         }
     }
 
-    // Creates Story
-    if (isset($_POST['create_story'])) {
-    $industry_id = (int) ($_POST['industry_id'] ?? 0);
-    try {
-        $conn->begin_transaction();
-
-        $stmt = $conn->prepare("INSERT INTO Simulation (Industry_ID) VALUES (?)");
-        $stmt->bind_param("i", $industry_id);
-        $stmt->execute();
-        $new_simulation_id = $conn->insert_id;
-        $stmt->close();
-
-        $stmt = $conn->prepare(
-            "INSERT INTO Version (Simulation_ID, Is_Published, Version_Language) VALUES (?, 'Unpublished', 'English')"
-        );
-        $stmt->bind_param("i", $new_simulation_id);
-        $stmt->execute();
-        $new_version_id = $conn->insert_id;
-        $stmt->close();
-
-        $stmt = $conn->prepare(
-            "INSERT INTO Pages (Version_ID, Page_Name, page_type) VALUES (?, 'Start', 'Start')"
-        );
-        $stmt->bind_param("i", $new_version_id);
-        $stmt->execute();
-        $stmt->close();
-
-        $conn->commit();
-        echo "<p class='success'>Story Created</p>";
-    } catch (Exception $e) {
-        $conn->rollback();
-        echo "<p class='fail'>Failed to Create Story</p>";
+    if ($action_error !== "") {
+        echo "<p class='fail'>" . htmlspecialchars($action_error) . "</p>";
     }
-}
 
     // Delete Story
     if(isset($_POST['delete_story_start'])) {
@@ -170,7 +203,7 @@ $story_list = [];
         if ($result) {
         ?>
         <div class="card">
-        <form method="POST" action="UserStories.php">
+        <form method="POST" action="SimulationManagement.php">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
             <p class='warning'>Are you sure you want to delete this story? 
                 Deleted stories cannot be recovered.<br>
@@ -228,43 +261,36 @@ $story_list = [];
         }
     }
     
-    // Play story
-    if (isset($_POST['play_story'])) {
-        $id = (int) $_POST['play_story'];
-        if (simulation_exists($conn, $id)) {
-            // POTENTIALLY DEAD LINK; INSPECT LATER
-            header("Location: simulation_page.php?version_id=" . $id);
-            exit;
-        }
-    }
-
-    // Edit story
-    if (isset($_POST['edit_story'])) {
-        $id = (int) $_POST['edit_story'];
-        if (simulation_exists($conn, $id)) {
-            // POTENTIALLY DEAD LINK; INSPECT LATER
-            header("Location: SimulationEditor.php?version_id=" . $id);
-            exit;
-        }
-    }
 
     $stmt = $conn->prepare(
-    "SELECT s.Simulation_ID AS id,
-        s.Simulation_Description AS story_title,
-        i.Industry_Name,
-        EXISTS (SELECT 1 FROM Version v
-            WHERE v.Simulation_ID = s.Simulation_ID
-            AND v.Is_Published = 'Published') AS public
-    FROM Simulation s
-    JOIN Industry i ON i.Industry_ID = s.Industry_ID
-    ORDER BY s.Simulation_ID");
+        "SELECT s.Simulation_ID AS id,
+                s.Simulation_Description AS story_title,
+                i.Industry_Name,
+                EXISTS (SELECT 1 FROM Version v
+                        WHERE v.Simulation_ID = s.Simulation_ID
+                          AND v.Is_Published = 'Published') AS public
+         FROM Simulation s
+         JOIN Industry i ON i.Industry_ID = s.Industry_ID
+         ORDER BY s.Simulation_ID"
+    );
+    $stmt->execute();
+    $story_list = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
+
+    // Industries that don't have a simulation yet (for the Create dropdown)
+    $industry_options = $conn->query(
+        "SELECT i.Industry_ID, i.Industry_Name
+         FROM Industry i
+         LEFT JOIN Simulation s ON s.Industry_ID = i.Industry_ID
+         WHERE s.Simulation_ID IS NULL
+         ORDER BY i.Industry_Name"
+    )->fetch_all(MYSQLI_ASSOC);
     ?>
 
     <!--List of Stories User has Created-->
     <div class="card"><h2 style="margin:0;color:#fff;">Your Stories</h2></div>
 
-    <form id="user_stories_form" method="POST" action="UserStories.php">
+    <form id="user_stories_form" method="POST" action="SimulationManagement.php">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
     <button type="submit" name="save_edits" value="1" tabindex="-1" aria-hidden="true"
             style="position:absolute;left:-9999px;">Save Edits</button>
@@ -304,8 +330,19 @@ $story_list = [];
 
     <?php endforeach; ?>
     <br>
-    <button class="btn" type="submit" name="create_story"> Create Story </button>
-
+    <?php if ($industry_options): ?>
+        <label for="industry_id">Industry:</label>
+        <select name="industry_id" id="industry_id">
+            <?php foreach ($industry_options as $opt): ?>
+                <option value="<?= (int) $opt['Industry_ID'] ?>">
+                    <?= htmlspecialchars($opt['Industry_Name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <button class="btn" type="submit" name="create_story"> Create Simulation </button>
+    <?php else: ?>
+        <p>Every industry already has a simulation, or no industries exist yet.</p>
+    <?php endif; ?>
 
 
     </form>
@@ -319,7 +356,4 @@ $story_list = [];
     <!-- php include("helpers/footer.php"); -->
     </body>
 
-
-
 </html>
-
