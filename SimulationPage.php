@@ -9,30 +9,39 @@
         && !isset($_GET['version_id'])) {
         header("Location: SimulationLanding.php");
         exit();
-    } 
+    }
+    
+    // If accessed by an employee, ensure they are logged in
+    if (isset($_GET['version_id']) && !isset($_SESSION['user_id'])) {
+        echo "<p class='fail'>You do not have access</p>";
+        die();
+    }   
 
     // Connects to database
     require "helpers/config.php";
 
-    // Ensures the session is open
-    $query = "SELECT Start_Date_Time, End_Date_Time
-         FROM Sessions JOIN version
-         WHERE session_id = ".$_SESSION['session_id']
-         ." AND is_published = 'Published'";
-    $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
+    // Outside user access
+    if (isset($_SESSION['version_id'])) {
+        // Ensures the session is open
+        $query = "SELECT Start_Date_Time, End_Date_Time
+            FROM Sessions JOIN version
+            WHERE session_id = ".$_SESSION['session_id']
+            ." AND is_published = 'Published'";
+        $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
 
-    $currentTime = new DateTime();
-    $startTime = new DateTime($result["Start_Date_Time"]);
-    $endTime = new DateTime($result["End_Date_Time"]);
+        $currentTime = new DateTime();
+        $startTime = new DateTime($result["Start_Date_Time"]);
+        $endTime = new DateTime($result["End_Date_Time"]);
 
-    if ($currentTime < $startTime) {
-        $message = "This access code is not active yet.";
-        echo "<a href='SimulationLanding.php'>Exit</a>";
-        die();
-    } elseif ($currentTime > $endTime) {
-        $message = "This access code is no longer active.";
-        echo "<a href='SimulationLanding.php'>Exit</a>";
-        die();
+        if ($currentTime < $startTime) {
+            $message = "This access code is not active yet.";
+            echo "<a href='SimulationLanding.php'>Exit</a>";
+            die();
+        } elseif ($currentTime > $endTime) {
+            $message = "This access code is no longer active.";
+            echo "<a href='SimulationLanding.php'>Exit</a>";
+            die();
+        }
     }
 
 ?>
@@ -52,12 +61,33 @@
 
     // A choice was clicked
     if (isset($_GET['page_id'])) {
-        $version_id = $_SESSION['version_id'];
+        // Set page id
         $page_id = $_GET['page_id'];
+        // Set version id
+        $version_id;
+        if (isset($_SESSION['version_id'])) {
+            $version_id = $_SESSION['version_id'];
+        }
+        else {
+            $query = "SELECT version_id FROM pages WHERE page_id = ".$page_id;
+            try {
+                $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
+                $version_id = $result['version_id'];
+            }
+            catch (Exception $e) {
+                echo "<p class='fail'>Failed to find simulation</p>";
+            }
+        }
     }
     // First page
     else {
-        $version_id = $_SESSION['version_id'];
+        $version_id;
+        if (isset($_SESSION['version_id'])) {
+            $version_id = $_SESSION['version_id'];
+        }
+        else {
+            $version_id = $_GET['version_id'];
+        }
         $query = "SELECT page_id FROM pages WHERE page_type = 'Start' AND version_id =".$version_id;
         try {
             $result = mysqli_fetch_assoc(mysqli_query($conn, $query));

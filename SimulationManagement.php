@@ -99,7 +99,7 @@ if (isset($_POST['create_story'])) {
 if (isset($_POST['play_story'])) {
     $vid = first_version_id($conn, (int) $_POST['play_story']);
     if ($vid !== null) {
-        header("Location: simulation_page.php?version_id=" . $vid);
+        header("Location: SimulationPage.php?version_id=" . $vid);
         exit;
     }
     $action_error = "That simulation has no version to play.";
