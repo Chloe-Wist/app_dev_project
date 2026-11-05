@@ -39,6 +39,7 @@
 <html>
     <head>
         <title>Simulation</title>
+        <link rel="stylesheet" href="styles/main.css">
     </head>
     <body>
     <div class="page-container">
@@ -98,7 +99,7 @@
             $href = "SimulationPage.php?page_id=".$a;
         }
         
-        echo "<li><a href='".$href."'>".$choice['choice_text']."</a></li>";
+        echo "<li><a class='button-primary' href='".$href."'>".$choice['choice_text']."</a></li>";
     }
     echo "</ul>"; // ends the list
 

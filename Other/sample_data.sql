@@ -41,13 +41,13 @@ INSERT INTO Sessions
     (Session_Name, Created_By, Passcode, Start_Date_Time, End_Date_Time)
 VALUES
     ('Future Test Session', 3, 'FUTURE26',
-     '2026-11-01 12:00:00', '2026-11-01 15:00:00');
+     '2027-11-01 12:00:00', '2027-11-01 15:00:00');
 
 INSERT INTO Sessions
     (Session_Name, Created_By, Passcode, Start_Date_Time, End_Date_Time)
 VALUES
     ('Active Test Session', 3, 'ACTIVE26',
-     '2026-10-01 12:00:00', '2026-11-01 15:00:00');
+     '2026-10-01 12:00:00', '2027-01-01 15:00:00');
 
 INSERT INTO Sessions
     (Session_Name, Created_By, Passcode, Start_Date_Time, End_Date_Time)

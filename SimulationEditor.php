@@ -37,7 +37,8 @@ require("helpers/page.php");
 <html>
 <head>
     <title>Page Editor</title>
-    <link rel="stylesheet" href="styles/nothing_yet.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/simulation_editor.css">
 </head>
 <body>
 <?php

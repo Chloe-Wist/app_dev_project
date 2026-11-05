@@ -60,7 +60,7 @@ class Page {
         while ($a = mysqli_fetch_assoc($result)) {
             $r = ['page_content_id' => $a['page_content_id'], 
                     'page_content' => $a['page_content']];
-            if (!in_array($r, $content)) {
+            if (!in_array($content, $r)) {
                 array_push($content, $r);
             }
         }

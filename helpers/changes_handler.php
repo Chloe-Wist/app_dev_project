@@ -25,16 +25,17 @@ if (isset($_POST['page_id']) && !isset($_POST['delete_page'])) {
         for ($i = 0; $i < count($_POST['page_content']); $i++) {
             $page_content = htmlspecialchars($_POST['page_content'][$i]);
             $page_content_id = $_POST['page_content_id'][$i];
-            
+
             $query = "UPDATE page_content SET
                     page_content = '".$page_content."'
                     WHERE page_content_id = ".$page_content_id;
-        }
-        try {
-            mysqli_query($conn, $query);
-        }
-        catch(Exception $e) {
-            echo "<p class='fail'>Page Content Failed to Update</p>";
+        
+            try {
+                mysqli_query($conn, $query);
+            }
+            catch(Exception $e) {
+                echo "<p class='fail'>Page Content Failed to Update</p>";
+            }
         }
     }
 

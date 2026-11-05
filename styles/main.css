@@ -293,3 +293,7 @@ form select:focus {
 .request-access:hover {
     text-decoration: underline;
 }
+
+li {
+    list-style-type: none;
+}
