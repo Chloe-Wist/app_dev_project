@@ -6,7 +6,7 @@
 
     // Ensures the user visited the info survey page first
     if ((!isset($_SESSION['version_id']) || !isset($_SESSION['session_id']))
-        && !isset($_GET['version_id'])) {
+        && (!isset($_GET['version_id']) || !isset($_GET['page_id']))) {
         header("Location: SimulationLanding.php");
         exit();
     }

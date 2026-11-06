@@ -1,6 +1,6 @@
 <?php
 // Creates a sidebar to navigate through the pages
-echo "<h3>Current Pagess</h3>";
+echo "<h3>Current Pages</h3>";
 $query = "SELECT page_id, page_name, page_type FROM pages WHERE version_id=".$version_id;
 $result = mysqli_query($conn, $query);
 
