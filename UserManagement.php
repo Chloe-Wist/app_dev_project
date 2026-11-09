@@ -77,9 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     elseif ($action === 'change_areas') {
-        // paste the Areas code from my earlier step 3 here
-        // (it ends by setting $message = "Areas updated.")
-        // Only keep IDs that are real Areas (form values can be edited in a browser)
         $validAreaIds = array_map('intval', array_column($areas, 'Area_ID'));
         $areaIds = array_filter(
             array_map('intval', (array) ($_POST['area_ids'] ?? [])),
@@ -89,13 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $conn->begin_transaction();
 
-            // 1. Remove all of this user's current Areas
+            // Remove all of this user's current Areas
             $stmt = $conn->prepare('DELETE FROM User_to_Area WHERE User_ID = ?');
             $stmt->bind_param("i", $targetId);
             $stmt->execute();
             $stmt->close();
 
-            // 2. Add one row per ticked box
+            // Add one row per ticked box
             $stmt = $conn->prepare('INSERT INTO User_to_Area (User_ID, Area_ID) VALUES (?, ?)');
             foreach ($areaIds as $areaId) {
                 $stmt->bind_param("ii", $targetId, $areaId);
