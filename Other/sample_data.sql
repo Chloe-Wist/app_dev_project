@@ -131,6 +131,31 @@ INSERT INTO pages (version_id, page_type)
 VALUEs (1, 'start');
 
 INSERT INTO pages (version_id, page_type)
-VALUEs (2, 'start')
+VALUEs (2, 'start');
 
 
+
+-- Data for event management
+INSERT INTO area (Area_Name) VALUES ('Area1'), ('Area2');
+
+-- Area1 is in area 1, area2 is in area 2, and area12 is in areas 1 and 2
+INSERT INTO users (username, email, password_hash, role_id,
+first_name, last_name, phone_number)
+VALUES ('Area1', 'user122@hil.com', '1', 1, 'Alice', 'Greene', 2);
+
+
+INSERT INTO users (username, email, password_hash, role_id,
+first_name, last_name, phone_number)
+VALUES ('Area2', 'user12@hil.com', '1', 1, 'Alice', 'Greene', 2);
+
+INSERT INTO users (username, email, password_hash, role_id,
+first_name, last_name, phone_number)
+VALUES ('Area12', 'user1212@hil.com', '1', 1, 'Alice', 'Greene', 2);
+
+
+-- These might not match for different number of users
+INSERT INTO user_to_area (user_id, area_id)
+VALUES (11, 1), (12, 2);
+
+INSERT INTO user_to_area (user_id, area_id)
+VALUES (13, 1), (13, 2)

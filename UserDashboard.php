@@ -30,6 +30,7 @@ if (!isset($_SESSION['user_id'])) {
     $title="Home";
     include("helpers/header.php")
     ?>
+    
     <div class="page">
         <div class="tab" id="home">
             <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username'] ); ?></h2>
