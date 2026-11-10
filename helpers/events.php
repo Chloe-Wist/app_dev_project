@@ -8,9 +8,8 @@ class Events {
     public $id;
     public $name;
     public $description;
-    public $date;
-    public $start_time;
-    public $end_time;
+    public $start_datetime;
+    public $end_datetime;
     public $manager_id;
     public $location;
     public $client_name;
@@ -34,9 +33,8 @@ class Events {
             $this->$id = $result['event_id'];
             $this->$name = $result['event_name'];
             $this->description = $result['event_description'];
-            $this->$date = $result['event_date'];
-            $this->$start_time = $result['start_time'];
-            $this->$end_time = $result['end_time'];
+            $this->$start_datetime = new DateTimeImmutable($result['date'].' '.$result['start_time']);
+            $this->$end_datetime = new DateTimeImmutable($result['date'].' '.$result['end_time']);;
             $this->$client_name = $result['client_name'];
 
             /* Complicated data */
@@ -62,8 +60,13 @@ class Events {
             // Session information
             $query = "SELECT session_id FROM sessions WHERE 
                 event_id = ".$event_id;
-            $data = mysqli_fetch_assoc(mysqli_query($conn, $query));
-            $this->$session = $data['session_id'];
+            try {
+                $data = mysqli_fetch_assoc(mysqli_query($conn, $query));
+                $this->$session = $data['session_id'];
+            }
+            catch (Exception $e) {
+                $this->$session = False;
+            }
 
             /* Multiple matching data */
             // Areas of event
