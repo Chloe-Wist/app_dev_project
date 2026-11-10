@@ -36,7 +36,7 @@ if (!isset($_SESSION['user_id'])) {
             <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username'] ); ?></h2>
             <?php
             // If the user is an admin, display the user management card
-            if ($_SESSION['role'] == 'Owner') {
+            if ($_SESSION['role'] == 'Owner' || $_SESSION['role' == 'Admin']) {
                 echo '<a href="UserManagement.php" class="card">User Management</a>';
             }
             ?>
