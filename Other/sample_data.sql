@@ -159,3 +159,9 @@ VALUES (11, 1), (12, 2);
 
 INSERT INTO user_to_area (user_id, area_id)
 VALUES (13, 1), (13, 2)
+
+-- INSERT INTO Area (Area_Name, Area_Description)
+-- VALUES ('Event Coordinator', 'Coordinates Events'), ('Security', 'Handles Security at events');
+
+-- INSERT INTO User_to_Area (User_ID, Area_ID)
+-- VALUES (1, 1);
