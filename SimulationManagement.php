@@ -157,17 +157,13 @@ $story_list = [];
     if (isset($_POST['save_edits']) && isset($_POST['story_id'])) {
         foreach ($_POST['story_id'] as $i => $raw_id) {
             $id = (int) $raw_id;
-            $description = trim($_POST['story_title'][$i] ?? "");
             $published = isset($_POST['public'][$i]) ? 'Published' : 'Unpublished';
 
         try {
             $conn->begin_transaction();
 
             $stmt = $conn->prepare("UPDATE Simulation SET Simulation_Description = ? WHERE Simulation_ID = ?");
-            $stmt->bind_param("si", $description, $id);
-            $stmt->execute();
-            $stmt->close();
-
+            
             $stmt = $conn->prepare("UPDATE Version SET Is_Published = ? WHERE Simulation_ID = ?");
             $stmt->bind_param("si", $published, $id);
             $stmt->execute();
@@ -264,7 +260,13 @@ $story_list = [];
 
     $stmt = $conn->prepare(
         "SELECT s.Simulation_ID AS id,
-                s.Simulation_Description AS story_title,
+                (SELECT p.Page_Name
+                   FROM Pages p
+                   JOIN Version v ON v.Version_ID = p.Version_ID
+                  WHERE v.Simulation_ID = s.Simulation_ID
+                    AND p.page_type = 'Start'
+                  ORDER BY v.Version_ID
+                  LIMIT 1) AS story_title,
                 i.Industry_Name,
                 EXISTS (SELECT 1 FROM Version v
                         WHERE v.Simulation_ID = s.Simulation_ID
@@ -306,7 +308,7 @@ $story_list = [];
             <p> Industry: <?php echo htmlspecialchars($story["Industry_Name"]); ?> </p>
             <!--Story Title-->
             <p> Story Title:
-                <input type="text" name="story_title[<?php echo $i; ?>]"   value="<?php echo htmlspecialchars($story["story_title"] ?? ""); ?>">
+                <span class="story-title-display"><?php echo htmlspecialchars($story["story_title"] ?? "Untitled"); ?></span>
             </p>
 
         <!--Public vs Private Setting-->
