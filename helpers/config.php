@@ -5,7 +5,7 @@
 
     $servername = 'localhost';
     $dbuser = "root";
-    $dbpassword = "";
+    $dbpassword = "password";
     $dbname = "erd";
 
     $conn = mysqli_connect($servername, $dbuser, $dbpassword, $dbname);

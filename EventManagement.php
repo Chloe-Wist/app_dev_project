@@ -26,6 +26,7 @@ require("helpers/config.php");
 <head>
     <title>Event Management</title>
     <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/eventManagement.js"></script>
 </head>
 <body>
 <?php
@@ -35,13 +36,26 @@ include("helpers/header.php");
 
 require("helpers/events.php");
 
+// If all_events is set, have button which changes it
+// to the user's events
+if (isset($_GET['all_events'])) {
+    echo '<button id="show_user_events">Show Only Your Events</button>';
+}
+else {
+    echo '<button id="show_all_events">Show All Events</button>';
+}
+
 // If facilitator, they only see the events they manager
-if ($_SESSION['role_name'] == 'Facilitator') {
-    $query = "SELECT event_id FROM event WHERE manager_id = ".$_SESSION['user_id'];
+if ($_SESSION['role'] == 'Facilitator') {
+    if (isset($_GET['all_events'])) {
+        $query = "SELECT event_id FROM event WHERE event_date > CURDATE()";
+    }
+    $query = "SELECT event_id FROM event WHERE manager_id = ".$_SESSION['user_id']
+        ." AND event_date > CURDATE()";
     $result = mysqli_query($conn, $query);
 }
 // If admin they see all events in their area
-else if ($_SESSION['role_name'] == 'Admin') {
+else if ($_SESSION['role'] == 'Admin') {
     $query = "SELECT area_id FROM user_to_area WHERE user_id = ".$_SESSION['user_id'];
     $result = mysqli_query($conn, $query);
 
@@ -55,10 +69,10 @@ else if ($_SESSION['role_name'] == 'Admin') {
     }
     $result = mysqli_query($conn, $query);
 }
-// If admin, show all events
+// If owner, show all events
 else {
     $query = "SELECT event_id FROM event";
-    $result = mysqli_query($conn, $event);
+    $result = mysqli_query($conn, $query);
 }
 
 $events = [];
@@ -67,9 +81,9 @@ while ($a = mysqli_fetch_assoc($result)) {
     array_push($events, new Events($a['event_id']));
 }
 
+echo '<div id="event_list">';
 // Display events
 foreach ($events as $e) {
-    if ($e->$start_datetime < new DateTimeImmutable('now')) {
 ?>  
     <div class="event">
         <h3 class="event_name"><?=$e->name?></h3>
@@ -109,8 +123,8 @@ foreach ($events as $e) {
         }?>
     </div>
 <?php 
-    }
 }
+echo "</div>";
 ?>
 
 

@@ -4,15 +4,18 @@
         session_start();
     }
 
+
+
     // Ensures the user visited the info survey page first
     if ((!isset($_SESSION['version_id']) || !isset($_SESSION['session_id']))
-        && (!isset($_GET['version_id']) || !isset($_GET['page_id']))) {
+        && (!isset($_SESSION['user_id']))) {
         header("Location: SimulationLanding.php");
         exit();
     }
     
-    // If accessed by an employee, ensure they are logged in
-    if (isset($_GET['version_id']) && !isset($_SESSION['user_id'])) {
+    // If accessed by an employee, ensure they have 
+    if (isset($_SESSION['user_id']) && ($_SESSION['role'] != 'Adimn' &&
+        $_SESSION['role'] != 'Owner')) {
         echo "<p class='fail'>You do not have access</p>";
         die();
     }   
