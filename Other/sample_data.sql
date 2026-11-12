@@ -165,3 +165,95 @@ VALUES (13, 1), (13, 2)
 
 -- INSERT INTO User_to_Area (User_ID, Area_ID)
 -- VALUES (1, 1);
+
+
+
+
+-- ==========================================
+-- Additional sample data for Events.php
+-- ==========================================
+-- Assigns Owner (User_ID 1) to Area1
+INSERT INTO User_to_Area (User_ID, Area_ID)
+VALUES (1, 1);
+
+-- ------------------------------------------
+-- Sample location
+-- ------------------------------------------
+-- All sample events use the same location (Location_ID 1)
+INSERT INTO Location (Address, City, State, Zip_Code)
+VALUES ('123 Main Street', 'Harrisburg', 'PA', '17101');
+
+
+-- ------------------------------------------
+-- Sample events
+-- ------------------------------------------
+-- Six upcoming events and three past events (as of 11/12/2026)
+-- All managed by Owner (User_ID 1)
+-- All use Location_ID 1
+
+INSERT INTO Event (
+    Event_Name, Event_Description, Event_Date,
+    Start_Time, End_Time, Manager_ID, Location_ID
+)
+VALUES
+    ('Community Outreach', 'Community outreach event.',
+     '2026-12-05', '10:00:00', '14:00:00', 1, 1),
+
+    ('Volunteer Orientation', 'Orientation for new volunteers.',
+     '2026-11-20', '09:00:00', '11:00:00', 1, 1),
+
+    ('Fundraising Dinner', 'Annual fundraising dinner.',
+     '2026-11-25', '18:00:00', '21:00:00', 1, 1),
+
+    ('Area1 Training', 'Training for Area1 volunteers.',
+     '2026-12-02', '13:00:00', '16:00:00', 1, 1),
+
+    ('Community Awareness Fair', 'Public awareness event.',
+     '2026-12-10', '10:00:00', '15:00:00', 1, 1),
+
+    ('Volunteer Appreciation', 'Appreciation gathering for volunteers.',
+     '2026-12-15', '17:00:00', '19:00:00', 1, 1),
+
+    ('Past Outreach Workshop', 'Previous outreach workshop.',
+     '2026-10-15', '10:00:00', '12:00:00', 1, 1),
+
+    ('Past Area1 Meeting', 'Previous Area1 meeting.',
+     '2026-11-05', '14:00:00', '16:00:00', 1, 1),
+
+    ('Past Fundraising Event', 'Previous fundraising event.',
+     '2026-09-20', '18:00:00', '21:00:00', 1, 1);
+
+
+-- ------------------------------------------
+-- Event invitations and RSVP statuses
+-- ------------------------------------------
+-- Community Outreach: Invited, No Reply
+-- Volunteer Orientation: Invited, No Reply
+-- Fundraising Dinner: Invited, Yes
+-- Community Awareness Fair: Not invited, Maybe
+-- Volunteer Appreciation: Invited, No
+
+-- Assumes the nine sample events have Event_IDs 1 through 9
+INSERT INTO Event_Signup (Event_ID, User_ID, Status, Is_Invited)
+VALUES
+    (1, 1, 'No Reply', TRUE),
+    (2, 1, 'No Reply', TRUE),
+    (3, 1, 'Yes', TRUE),
+    (5, 1, 'Maybe', FALSE),
+    (6, 1, 'No', TRUE);
+
+
+-- ------------------------------------------
+-- Event area assignments
+-- ------------------------------------------
+-- Area1 Training: Area1
+-- Community Awareness Fair: Area1
+-- Volunteer Appreciation: Area1 and Area2
+-- Past Area1 Meeting: Area1
+INSERT INTO Event_to_Area (Event_ID, Area_ID)
+VALUES
+    (4, 1),
+    (5, 1),
+    (6, 1),
+    (6, 2),
+    (8, 1);
