@@ -1,11 +1,24 @@
 /* usermanagement.css
-   Styles for the User Management page.
-   Everything is scoped to .user-management (a class on the card), so other pages are unaffected. */
+   Styles for the User Management page (UserManagement.php).
+   Scoped to .user-management so other pages are unaffected. */
+
+/* ---------- Message above the card (add class="flash" to that <p>) ---------- */
+.flash {
+    max-width: 1000px;
+    margin: 20px auto 0;
+    padding: 12px 18px;
+    background: #eef3fb;
+    border: 1px solid #bcd0f2;
+    border-left: 5px solid #3b82f6;
+    border-radius: 8px;
+    color: #1f2937;
+    box-sizing: border-box;
+}
 
 /* ---------- Card ---------- */
 .card.user-management {
     max-width: 1000px;
-    margin: 32px auto;
+    margin: 24px auto 40px;
     padding: 28px 28px 24px;
     background: #ffffff;
     color: #222;
@@ -20,9 +33,15 @@
     color: #1f2937;
 }
 
+/* "No users to show" message */
+.user-management > p {
+    color: #6b7280;
+    font-style: italic;
+}
+
 /* ---------- Scrolling list ---------- */
 .user-management .user-list {
-    max-height: 520px;
+    max-height: 560px;
     overflow-y: auto;
     border: 1px solid #d5d9e0;
     border-radius: 10px;
@@ -33,31 +52,38 @@
 .user-management .user-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 14px 20px;
+    align-items: flex-start;
+    gap: 12px 20px;
     padding: 14px 18px;
     border-bottom: 1px solid #e5e8ee;
     transition: background 0.15s;
 }
-.user-management .user-row:last-child {
-    border-bottom: none;
-}
-.user-management .user-row:nth-child(even) {
-    background: #f8f9fb;
-}
-.user-management .user-row:hover {
-    background: #eef3fb;
-}
+.user-management .user-row:last-child { border-bottom: none; }
+.user-management .user-row:nth-child(even) { background: #f8f9fb; }
+.user-management .user-row:hover { background: #eef3fb; }
 
-/* The name: grows to fill space so the controls line up on the right */
-.user-management .user-row > span:first-child {
+/* Name: grows to fill space so the controls line up to its right */
+.user-management .user-row .name {
     flex: 1 1 170px;
+    padding-top: 6px;
     font-weight: 600;
     font-size: 16px;
     color: #1f2937;
 }
 
-/* ---------- The small forms inside each row ---------- */
+/* Role shown as text (Admin view) looks like a badge */
+.user-management .user-row > span:not(.name) {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e40af;
+    background: #dbeafe;
+    border-radius: 999px;
+}
+
+/* ---------- Small forms inside each row ---------- */
 .user-management .user-row form {
     margin: 0;
     display: flex;
@@ -66,7 +92,11 @@
     gap: 8px;
 }
 
-/* ---------- Role dropdown ---------- */
+/* ---------- Inputs and dropdowns ---------- */
+.user-management input[type="text"],
+.user-management input[type="email"],
+.user-management input[type="tel"],
+.user-management input[type="password"],
 .user-management select {
     padding: 8px 12px;
     font-size: 14px;
@@ -74,9 +104,19 @@
     background: #fff;
     border: 1px solid #c4cad3;
     border-radius: 8px;
-    cursor: pointer;
+    box-sizing: border-box;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
+.user-management input[type="text"],
+.user-management input[type="email"],
+.user-management input[type="tel"],
+.user-management input[type="password"] {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+.user-management select { cursor: pointer; }
+
+.user-management input:focus,
 .user-management select:focus {
     outline: none;
     border-color: #3b82f6;
@@ -84,7 +124,7 @@
 }
 
 /* ---------- Area checkboxes shown as chips ---------- */
-.user-management .user-row label {
+.user-management label {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -97,11 +137,8 @@
     user-select: none;
     transition: background 0.15s, border-color 0.15s;
 }
-.user-management .user-row label:hover {
-    background: #e4e8ee;
-}
-/* Ticked chips are highlighted (supported in current browsers) */
-.user-management .user-row label:has(input:checked) {
+.user-management label:hover { background: #e4e8ee; }
+.user-management label:has(input:checked) {
     background: #dbeafe;
     border-color: #3b82f6;
     color: #1e40af;
@@ -113,8 +150,7 @@
 }
 
 /* ---------- Buttons ---------- */
-.user-management button,
-.user-management .btn {
+.user-management button {
     padding: 8px 16px;
     font-size: 14px;
     font-weight: 600;
@@ -125,44 +161,91 @@
     cursor: pointer;
     transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
 }
-.user-management button:hover,
-.user-management .btn:hover {
+.user-management button:hover {
     background: #2563eb;
     transform: translateY(-1px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
-.user-management button:active,
-.user-management .btn:active {
+.user-management button:active {
     transform: translateY(0);
     box-shadow: none;
 }
-/* Optional colour variants, in case you add Delete / Create buttons */
-.user-management .btn-red,
-.user-management button.btn-red   { background: #dc2626; }
-.user-management .btn-red:hover,
-.user-management button.btn-red:hover   { background: #b91c1c; }
-.user-management .btn-green,
-.user-management button.btn-green { background: #16a34a; }
-.user-management .btn-green:hover,
-.user-management button.btn-green:hover { background: #15803d; }
 
-/* ---------- Empty message ---------- */
-.user-management > p {
-    color: #6b7280;
-    font-style: italic;
+/* Delete buttons are red (works without adding a class) */
+.user-management form:has(input[value="delete_user"]) button,
+.user-management button.btn-red {
+    background: #dc2626;
+}
+.user-management form:has(input[value="delete_user"]) button:hover,
+.user-management button.btn-red:hover {
+    background: #b91c1c;
+}
+
+/* ---------- Expandable sections (Edit Info, Set Password, Create Account) ---------- */
+.user-management details {
+    margin: 0;
+}
+.user-management summary {
+    display: inline-block;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e40af;
+    background: #eef3fb;
+    border: 1px solid #bcd0f2;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    transition: background 0.15s;
+}
+.user-management summary::-webkit-details-marker { display: none; }
+.user-management summary:hover { background: #dbeafe; }
+
+/* When open inside a row, the form drops to its own full-width line */
+.user-management .user-row details[open] {
+    flex-basis: 100%;
+}
+.user-management details[open] > form {
+    margin-top: 12px;
+    padding: 14px;
+    background: #f8f9fb;
+    border: 1px solid #e1e4e8;
+    border-radius: 10px;
+}
+
+/* The Create Account section sits below the list */
+.user-management > details {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e8ee;
+}
+.user-management > details > form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
 }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 700px) {
     .card.user-management {
-        margin: 16px 10px;
+        margin: 16px 10px 30px;
         padding: 18px 14px;
     }
     .user-management .user-row {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
-    .user-management .user-row form {
+    .user-management .user-row > span:not(.name) {
+        align-self: flex-start;
+    }
+    .user-management button,
+    .user-management summary {
         width: 100%;
+        text-align: center;
+    }
+    .user-management label {
+        width: auto;
     }
 }
