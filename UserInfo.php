@@ -74,15 +74,6 @@ function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
         <title> User Info </title>
         <link rel="stylesheet" href="styles/main.css">
         <link rel="stylesheet" href="styles/userinfo.css">
-        <style>
-            .profile-photo { width: 120px; height: 120px; border-radius: 50%;
-                             border: 4px solid #000; background: #ddd; object-fit: cover;
-                             display: block; margin: 0 auto 24px; }
-            .profile-row   { display: flex; gap: 16px; justify-content: center; margin-bottom: 16px; }
-            .profile-form input { padding: 8px; }
-            input[readonly] { background: #eee; cursor: default; }
-            .hidden { display: none; }
-        </style>
     </head>
     <body>
         <?php
@@ -100,18 +91,26 @@ function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
                 <form method="POST" action="UserInfo.php" id="infoForm">
                     <div class="profile-row">
-                        <input type="text" name="first_name" placeholder="First Name"
+                        <label class="field">First Name
+                            <input type="text" name="first_name" placeholder="First Name"
                                value="<?= h($user['First_Name']) ?>" readonly required>
-                        <input type="text" name="last_name" placeholder="Last Name"
+                        </label>
+                        <label class="field">Last Name
+                            <input type="text" name="last_name" placeholder="Last Name"
                                value="<?= h($user['Last_Name']) ?>" readonly required>
+                        </label>
                     </div>
                     <div class="profile-row">
-                        <input type="email" name="email" placeholder="Email"
+                        <label class="field">Email
+                            <input type="email" name="email" placeholder="Email"
                                value="<?= h($user['Email']) ?>" readonly required>
+                        </label>
                     </div>
                     <div class="profile-row">
-                        <input type="tel" name="phone" placeholder="Phone"
+                        <label class="field">Phone Number
+                            <input type="tel" name="phone" placeholder="Phone"
                                value="<?= h($user['Phone_Number']) ?>" readonly required>
+                        </label>
                     </div>
 
                     <div class="profile-row">

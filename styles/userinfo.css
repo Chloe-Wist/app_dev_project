@@ -78,6 +78,32 @@
     box-shadow: none;
 }
 
+/* Field labels: plain text stacked above the input */
+.profile-form label.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 180px;
+    min-width: 0;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+/* The input fills the label. Overrides the older flex rules on inputs. */
+.profile-form .profile-row label.field input {
+    flex: none;
+    width: 100%;
+    font-weight: normal;
+}
+
+/* Email and phone take the full row width */
+.profile-form .profile-row:nth-of-type(2) label.field,
+.profile-form .profile-row:nth-of-type(3) label.field {
+    flex-basis: 100%;
+}
+
 /* ---------- Buttons ---------- */
 .profile-form .btn {
     display: inline-block;
