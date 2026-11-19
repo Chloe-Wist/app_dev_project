@@ -23,36 +23,40 @@ class Events {
         require "config.php";
 
         // Find the matching event, if it exists
-        $query = "SELECT * FROM event WHERE event_id = ".$event_id;
+        $query = "SELECT Event_ID, Event_Name, Event_Description, Event_Date, 
+            Start_Time, End_Time, Manager_ID, Location_ID, Client_Name
+            FROM event WHERE event_id = ".$event_id;
 
         $result = mysqli_fetch_assoc(mysqli_query($conn, $query));
 
         // Store all relevant data
         try {
             // Simple data
-            $this->$id = $result['event_id'];
-            $this->$name = $result['event_name'];
-            $this->description = $result['event_description'];
-            $this->$start_datetime = new DateTimeImmutable($result['date'].' '.$result['start_time']);
-            $this->$end_datetime = new DateTimeImmutable($result['date'].' '.$result['end_time']);;
-            $this->$client_name = $result['client_name'];
+            $this->id = $result['Event_ID'];
+            $this->name = $result['Event_Name'];
+            $this->description = $result['Event_Description'];
+            $this->start_datetime = new DateTimeImmutable($result['Event_Date'].' '.$result['Start_Time']);
+            $this->end_datetime = new DateTimeImmutable($result['Event_Date'].' '.$result['End_Time']);;
+            $this->client_name = $result['Client_Name'];
 
             /* Complicated data */
             // Manager information
             $query = "SELECT first_name, last_name From 
-                users WHERE user_id = ".$result['manager_id'];
+                users WHERE user_id = ".$result['Manager_ID'];
             $data = mysqli_fetch_assoc(mysqli_query($conn, $query));
-            $this->$manager_id = 
-                ['user_id' => $result['manager_id'],
+            $this->manager_id = 
+                ['user_id' => $result['Manager_ID'],
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name']];
 
             // Location Information
-            $query = "SELECT address, city, state, zip_code FROM
-                location WHERE location_id = ".$result['location_id'];
+            $query = "SELECT address, city, state, zip_code, name FROM
+                location WHERE location_id = ".$result['Location_ID'];
             $data = mysqli_fetch_assoc(mysqli_query($conn, $query));
-            $this->$location = 
-                ['address' => $data['address'],
+            $this->location = 
+                ['location_id' => $result['Location_ID'],
+                'name' => $data['name'],
+                'address' => $data['address'],
                 'city' => $data['city'],
                 'state' => $data['state'],
                 'zip_code' => $data['zip_code']];
@@ -60,34 +64,36 @@ class Events {
             // Session information
             $query = "SELECT session_id FROM sessions WHERE 
                 event_id = ".$event_id;
-            try {
-                $data = mysqli_fetch_assoc(mysqli_query($conn, $query));
-                $this->$session = $data['session_id'];
+            $data = mysqli_fetch_assoc(mysqli_query($conn, $query));
+
+            if (isset($data)) {
+                $this->sessions = $data['Session_ID'];
             }
-            catch (Exception $e) {
-                $this->$session = False;
+            else {
+                $this->sessions = False;
             }
 
             /* Multiple matching data */
             // Areas of event
-            $query = "SELECT area_name FROM event_to_area 
+            $query = "SELECT area_name, area.area_id FROM event_to_area 
                 JOIN area ON area.area_id = event_to_area.area_id
-                WHERE event_id = ".$event_id;
-            $data = mysqli_query($conn, $data);
+                WHERE event_id = ".$this->id;
+            $data = mysqli_query($conn, $query);
             while ($a = mysqli_fetch_assoc($data)) {
-                array_push($this->$areas, $a['area_name']);
+                array_push($this->areas, ["area_id" => $a['area_id'], 
+                                        "area_name" => $a['area_name']]);
             }
 
             // Documents from event
             $query = "SELECT document_id, document_name, document_path, 
-                upload_date FROM event_document WHERE event_id = ".$event_id;
-            $data = mysqli_query($conn, $data);
+                upload_date FROM event_document WHERE event_id = ".$this->id;
+            $data = mysqli_query($conn, $query);
             while ($a = mysqli_fetch_assoc($data)) {
-                $d = ['id' => $a['document_id'],
-                    'name' => $a['document_name'],
-                    'path' => $a['document_path'],
-                    'upload_date' => $a['upload_date']];
-                array_push($this->$areas, $d);
+                $d = ['id' => $a['Document_ID'],
+                    'name' => $a['Document_Name'],
+                    'path' => $a['Document_Path'],
+                    'upload_date' => $a['Upload_Date']];
+                array_push($this->areas, $d);
             }
             $this->documents;
         }
