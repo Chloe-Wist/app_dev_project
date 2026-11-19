@@ -1,8 +1,8 @@
-/* usermanagement.css
-   Styles for the User Management page (UserManagement.php).
+/* usermanagement.css  (list + popup editor version)
+   The list shows one slim row per user. Clicking Edit opens a popup (<dialog>) with the whole editor.
    Scoped to .user-management so other pages are unaffected. */
 
-/* ---------- Message above the card (add class="flash" to that <p>) ---------- */
+/* ---------- Message above the card (class="flash") ---------- */
 .flash {
     max-width: 1000px;
     margin: 20px auto 0;
@@ -19,77 +19,78 @@
 .card.user-management {
     max-width: 1000px;
     margin: 24px auto 40px;
-    padding: 28px 28px 24px;
-    background: #ffffff;
+    padding: 24px 24px 20px;
+    background: #fff;
     color: #222;
     border-radius: 14px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
 }
+.user-management h2 { margin: 0 0 14px; font-size: 24px; color: #1f2937; }
+.user-management > p { color: #6b7280; font-style: italic; }
 
-.user-management h2 {
-    margin: 0 0 18px;
-    font-size: 24px;
-    color: #1f2937;
+/* ---------- Filter bar ---------- */
+.user-management .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
 }
-
-/* "No users to show" message */
-.user-management > p {
-    color: #6b7280;
-    font-style: italic;
-}
+.user-management .filters input[type="search"] { flex: 2 1 220px; }
+.user-management .filters select { flex: 1 1 140px; }
+.user-management #filterCount { margin-left: auto; font-size: 13px; color: #6b7280; }
 
 /* ---------- Scrolling list ---------- */
 .user-management .user-list {
-    max-height: 560px;
+    max-height: 600px;
     overflow-y: auto;
     border: 1px solid #d5d9e0;
     border-radius: 10px;
     background: #fff;
 }
 
-/* ---------- One row per user ---------- */
+/* ---------- One slim row per user ---------- */
 .user-management .user-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 12px 20px;
-    padding: 14px 18px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
     border-bottom: 1px solid #e5e8ee;
     transition: background 0.15s;
 }
+/* The filter uses the hidden attribute; this makes it win over display:flex */
+.user-management .user-row[hidden] { display: none; }
 .user-management .user-row:last-child { border-bottom: none; }
-.user-management .user-row:nth-child(even) { background: #f8f9fb; }
-.user-management .user-row:hover { background: #eef3fb; }
+.user-management .user-row:hover { background: #f3f7fd; }
 
-/* Name: grows to fill space so the controls line up to its right */
 .user-management .user-row .name {
-    flex: 1 1 170px;
-    padding-top: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     color: #1f2937;
+    line-height: 1.25;
+}
+.user-management .user-row .name small {
+    display: block;
+    font-weight: normal;
+    font-size: 12px;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Role shown as text (Admin view) looks like a badge */
+/* Role as a small badge */
 .user-management .user-row > span:not(.name) {
-    align-self: flex-start;
-    margin-top: 4px;
-    padding: 4px 12px;
-    font-size: 13px;
+    flex: 0 0 auto;
+    padding: 3px 10px;
+    font-size: 12px;
     font-weight: 600;
     color: #1e40af;
     background: #dbeafe;
     border-radius: 999px;
-}
-
-/* ---------- Small forms inside each row ---------- */
-.user-management .user-row form {
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
 }
 
 /* ---------- Inputs and dropdowns ---------- */
@@ -97,6 +98,7 @@
 .user-management input[type="email"],
 .user-management input[type="tel"],
 .user-management input[type="password"],
+.user-management input[type="search"],
 .user-management select {
     padding: 8px 12px;
     font-size: 14px;
@@ -107,15 +109,7 @@
     box-sizing: border-box;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
-.user-management input[type="text"],
-.user-management input[type="email"],
-.user-management input[type="tel"],
-.user-management input[type="password"] {
-    flex: 1 1 160px;
-    min-width: 0;
-}
 .user-management select { cursor: pointer; }
-
 .user-management input:focus,
 .user-management select:focus {
     outline: none;
@@ -123,35 +117,9 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
-/* ---------- Area checkboxes shown as chips ---------- */
-.user-management label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    font-size: 13px;
-    background: #f1f3f5;
-    border: 1px solid #d5d9e0;
-    border-radius: 999px;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.15s, border-color 0.15s;
-}
-.user-management label:hover { background: #e4e8ee; }
-.user-management label:has(input:checked) {
-    background: #dbeafe;
-    border-color: #3b82f6;
-    color: #1e40af;
-}
-.user-management input[type="checkbox"] {
-    margin: 0;
-    accent-color: #3b82f6;
-    cursor: pointer;
-}
-
 /* ---------- Buttons ---------- */
 .user-management button {
-    padding: 8px 16px;
+    padding: 7px 16px;
     font-size: 14px;
     font-weight: 600;
     color: #fff;
@@ -159,35 +127,125 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    transition: background 0.15s, transform 0.1s;
 }
-.user-management button:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+.user-management button:hover { background: #2563eb; transform: translateY(-1px); }
+.user-management button:active { transform: none; }
+
+/* Secondary (Cancel) and danger (Delete) buttons */
+.user-management button.btn-secondary { color: #374151; background: #e5e7eb; }
+.user-management button.btn-secondary:hover { background: #d1d5db; }
+.user-management button.btn-red,
+.user-management form:has(input[value="delete_user"]) button { background: #dc2626; }
+.user-management button.btn-red:hover,
+.user-management form:has(input[value="delete_user"]) button:hover { background: #b91c1c; }
+
+/* The Edit button in each row */
+.user-management .user-row .btn-edit { flex: 0 0 auto; padding: 5px 14px; }
+
+/* ---------- The popup editor ---------- */
+.user-management dialog.edit-dialog {
+    width: min(560px, 92vw);
+    max-height: 90vh;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    color: #222;
+    background: #fff;
+    overflow-y: auto;
 }
-.user-management button:active {
-    transform: translateY(0);
-    box-shadow: none;
+.user-management dialog.edit-dialog::backdrop { background: rgba(15, 23, 42, 0.55); }
+
+.edit-dialog .edit-form { padding: 22px 24px 12px; }
+.edit-dialog h3 { margin: 0 0 16px; font-size: 20px; color: #1f2937; }
+
+/* Two columns of fields; stacks on narrow screens */
+.edit-dialog .edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 14px;
+    margin-bottom: 14px;
+}
+.edit-dialog .edit-grid .wide { grid-column: 1 / -1; }
+
+/* Labeled fields: text above the input */
+.edit-dialog label.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    background: none;
+    border: none;
+    border-radius: 0;
+    cursor: default;
+}
+.edit-dialog label.field input,
+.edit-dialog label.field select { width: 100%; font-weight: normal; }
+.edit-dialog .hint { font-weight: normal; color: #6b7280; }
+
+/* Areas as chips */
+.edit-dialog fieldset {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border: 1px solid #e1e4e8;
+    border-radius: 10px;
+}
+.edit-dialog legend { padding: 0 6px; font-size: 12px; font-weight: 600; color: #4b5563; }
+.edit-dialog fieldset label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 3px 4px 3px 0;
+    padding: 3px 10px;
+    font-size: 12px;
+    background: #f1f3f5;
+    border: 1px solid #d5d9e0;
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+}
+.edit-dialog fieldset label:hover { background: #e4e8ee; }
+.edit-dialog fieldset label:has(input:checked) {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+.edit-dialog input[type="checkbox"] { margin: 0; accent-color: #3b82f6; cursor: pointer; }
+
+/* Cancel / Save row */
+.edit-dialog .edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 6px;
 }
 
-/* Delete buttons are red (works without adding a class) */
-.user-management form:has(input[value="delete_user"]) button,
-.user-management button.btn-red {
-    background: #dc2626;
-}
-.user-management form:has(input[value="delete_user"]) button:hover,
-.user-management button.btn-red:hover {
-    background: #b91c1c;
-}
-
-/* ---------- Expandable sections (Edit Info, Set Password, Create Account) ---------- */
-.user-management details {
+/* Delete sits at the bottom, separated from the main form */
+.edit-dialog .delete-zone {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     margin: 0;
+    padding: 12px 24px 18px;
+    border-top: 1px solid #e5e8ee;
+    font-size: 13px;
+    color: #6b7280;
 }
-.user-management summary {
+
+/* ---------- Create Account section below the list ---------- */
+.user-management > details {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e8ee;
+}
+.user-management > details summary {
     display: inline-block;
-    padding: 7px 14px;
+    padding: 6px 14px;
     font-size: 14px;
     font-weight: 600;
     color: #1e40af;
@@ -195,57 +253,36 @@
     border: 1px solid #bcd0f2;
     border-radius: 8px;
     cursor: pointer;
-    user-select: none;
     list-style: none;
-    transition: background 0.15s;
 }
-.user-management summary::-webkit-details-marker { display: none; }
-.user-management summary:hover { background: #dbeafe; }
-
-/* When open inside a row, the form drops to its own full-width line */
-.user-management .user-row details[open] {
-    flex-basis: 100%;
-}
-.user-management details[open] > form {
-    margin-top: 12px;
-    padding: 14px;
-    background: #f8f9fb;
-    border: 1px solid #e1e4e8;
-    border-radius: 10px;
-}
-
-/* The Create Account section sits below the list */
-.user-management > details {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #e5e8ee;
-}
+.user-management > details summary::-webkit-details-marker { display: none; }
 .user-management > details > form {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    align-items: center;
+    align-items: flex-end;
+    margin-top: 12px;
 }
+.user-management > details > form label.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 150px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+}
+.user-management > details > form label.field input,
+.user-management > details > form label.field select { width: 100%; font-weight: normal; }
 
 /* ---------- Small screens ---------- */
-@media (max-width: 700px) {
-    .card.user-management {
-        margin: 16px 10px 30px;
-        padding: 18px 14px;
-    }
-    .user-management .user-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .user-management .user-row > span:not(.name) {
-        align-self: flex-start;
-    }
-    .user-management button,
-    .user-management summary {
-        width: 100%;
-        text-align: center;
-    }
-    .user-management label {
-        width: auto;
-    }
+@media (max-width: 600px) {
+    .card.user-management { margin: 16px 10px 30px; padding: 16px 12px; }
+    .edit-dialog .edit-grid { grid-template-columns: 1fr; }
+    .user-management .user-row { flex-wrap: wrap; }
+    .user-management #filterCount { margin-left: 0; width: 100%; }
 }
+
+/* ---------- Create Account form (inside <details>) reuses the popup field styles ---------- */
+.user-management > details > form.create-form { display: block; }
+.create-form .edit-grid { margin-top: 12px; }
