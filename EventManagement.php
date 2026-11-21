@@ -24,15 +24,28 @@ require("helpers/events_changes_handler.php");
 
 
 // Get user areas
-$query = "SELECT area.area_id, area_name FROM user_to_area 
-JOIN area ON user_to_area.area_id = area.area_id
-WHERE user_id = ".$_SESSION['user_id'];
+// If the user is an owner, return all areas. Otherwise get the areas 
+// associated with the user. If no areas are found, store -1 as area_id
+$user_areas;
+if ($_SESSION['role'] == 'Owner') {
+    $query = "SELECT area_id, area_name FROM area";
+}
+else {
+    $query = "SELECT area.area_id, area_name FROM user_to_area 
+    JOIN area ON user_to_area.area_id = area.area_id
+    WHERE user_id = ".$_SESSION['user_id'];
+}
+
 $result = mysqli_query($conn, $query);
 
-$user_areas;
 while ($a = mysqli_fetch_assoc($result)) {
     $user_areas[] = ['area_id' => $a['area_id'],
                     'area_name' => $a['area_name']];
+}
+
+if (!isset($user_areas)) {
+    $user_areas[] = ['area_id' => -1,
+                    'area_name' => 'No user areas'];
 }
 
 
@@ -53,6 +66,7 @@ include("helpers/header.php");
 
 require("helpers/events.php");
 
+
 // If the user wants to create an event or to edit an event
 if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
     // Retrieve information on the event
@@ -62,6 +76,7 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
 
     // Make a form for saving event info
     ?>
+    <a href="eventManagement.php">Cancel</a>
     <form method="POST" action="eventManagement.php" id="edit_event">
         <!-- Event ID (ID of -1 means it is a new event)-->
          <input type="hidden" name="event_id" id="event_id"
@@ -74,8 +89,7 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
 
         <!-- Description -->
         <label for="description">Description</label>
-        <textarea name="description" id="description" placeholder="Type here...">
-            <?=isset($e)?$e->description:""?></textarea>
+        <textarea name="description" id="description" placeholder="Type here..."><?=isset($e)?$e->description:""?></textarea>
 
         <!-- Date -->
         <label for="date">Date</label>
@@ -92,12 +106,56 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
         <input type="time" id="end_time" name="end_time"
         value="<?=$e?$e->end_datetime->format('H:i'):""?>">
 
+        <!-- Areas -->
+        <fieldset id="areas_fieldset">
+            <legend>Areas</legend>
+
+            <?php
+            // If the user is a facilitator or an admin,
+            // they can select the areas that either are already on the event,
+            // or that they have
+            $areas;
+
+            // Areas of the event
+            if (isset($e) && !empty($e->areas)) {
+                foreach($e->areas as $a) {
+                    $areas[] = ['area_id' => $a['area_id'],
+                                'area_name' => $a['area_name'],
+                                'is_checked' => true];
+                }
+            }
+
+            // Areas of the user
+            foreach ($user_areas as $a) {
+                $new = ['area_id' => $a['area_id'],
+                        'area_name' => $a['area_name'],
+                        'is_checked' => true]; // true just for checking
+                                                // if in array
+                
+                if (!isset($areas) || !in_array($new, $areas)) {
+                    $areas[] = ['area_id' => $a['area_id'],
+                                'area_name' => $a['area_name'],
+                                'is_checked' => false];
+                }
+            }
+
+            // Add all the areas to the checklist
+            foreach ($areas as $a) {
+                echo '<input type="checkbox" id="area'.$a['area_id'].'" 
+                    name="area[]" value="'.$a['area_id'].'" '.
+                    ($a['is_checked']?"checked":"").'>';
+                echo '<label for="area'.$a['area_id'].'">'.
+                    $a['area_name'].'</label>';
+            }
+            ?>
+        </fieldset>
+
         <!-- Managed By -->
         <?php 
         //  Facilitators cannot change the manager of the event
         if ($_SESSION['role'] == "Facilitator") {
             echo "<p>Managed By</p>";
-            if ($e) {
+            if (isset($e)) {
                 echo "<p>".$e->manager_id['first_name']." ".$e->manager_id['last_name']."</p>";
                 echo '<input type="hidden" name="manager" value="'.$e->manager_id['manager_id'].'">';      
             }
@@ -113,23 +171,58 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
             // Get list of all possible people to manage
             $query = "SELECT DISTINCT first_name, last_name, users.user_id FROM users JOIN user_to_area 
                 ON users.user_id = user_to_area.user_id WHERE area_id = "
-                .(isset($e)?$e->areas[0]['area_id']:$user_areas[0]['area_id']); 
-                    // If the event has already been made, you can select any area that the event has.
+                .(!empty($e->areas)?$e->areas[0]['area_id']:$user_areas[0]['area_id']); 
+                    // If the event has already been made, you can select any person
+                    // in the area that the event has
                     
-            if (isset($e)) {
+            if (!empty($e->areas)) {
                 for ($i = 1; $i < count($e->areas); $i++) {
-                    $query .= " OR area_id = ".$e->areas[$i];
+                    $query .= " OR area_id = ".$e->areas[$i]['area_id'];
                 }
             }
 
             $result = mysqli_query($conn, $query);
 
+            // Record all users who match
+            $possible_managers;
+            while ($a = mysqli_fetch_assoc($result)) {
+                $possible_managers[] = ["manager_id" => $a['user_id'],
+                                        "name" => $a['first_name'].' '.$a['last_name'],
+                                        "area_matches" => true];
+            }
+
+            // Get all other users
+            $query = "SELECT user_id, first_name, last_name FROM users 
+                    JOIN roles ON users.role_id = roles.role_id
+                    WHERE role_name != 'Volunteer'"; 
+
+            if(isset($possible_managers) && !empty($possible_managers)) {
+                foreach ($possible_managers as $p) {
+                    $query .= " AND user_id != ".$p['manager_id'];
+                }
+            }
+
+            $result = mysqli_query($conn, $query);
+
+            while ($a = mysqli_fetch_assoc($result)) {
+                $possible_managers[] = ["manager_id" => $a['user_id'],
+                                        "name" => $a['first_name'].' '.$a['last_name'],
+                                        "area_matches" => false];
+            }
+
+            // Create list of possible managers
             echo '<label for="manager">Managed By</label>';
             echo '<select id="manager" name="manager">';
-            while ($a = mysqli_fetch_assoc($result)) {
-                echo('<option value="'.$a['manager_id'].'" 
-                '.($a['manager_id'] == $e->manager_id['manager_id'])?"selected":"".'>
-                '.$a['first_name'].' '.$a['last_name'].'</option>');
+            // Default option
+            if (!isset($e)) {
+                echo '<option value="-1" selected disabled hidden>-- Select a manager --</option>';
+            }
+            // Actual options
+            foreach ($possible_managers as $p) {
+                echo('<option value="'.$p['manager_id'].'" 
+                '.((isset($e) && $p['manager_id'] == $e->manager_id['user_id'])?"selected":"").'>
+                '.$p['name'].' ('.
+                ($p['area_matches']?"Area Matches":"No Matching Areas").')</option>');
             }
             echo '</select>';
         } 
@@ -137,6 +230,8 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
         ?>
         <!-- Location -->
         <p>Location</p>
+
+        <!-- Current location information -->
         <p id="current_location"> <?php
             if (isset($e)) { ?>
                 <?=$e->location['name']."\n".
@@ -149,32 +244,47 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
         </p>
         <input type="hidden" name="location_id_original" id="location_id_original"
             value="<?=isset($e)?$e->location['location_id']:-1?>">
-
+            
+        <!-- Change to a different previously defined location -->
         <button type="button" id="change_location">Change to different location</button>
+
         <?php
+        // Edit current location
         // Only allow editing the current location if there is a current location
         if (isset($e)) { ?>
             <button type="button" id="edit_location_button">Edit Current Location</button>
-        <?php } ?>
+        <?php } 
+
+        // Create new location 
+        // ?>
         <button type="button" id="create_location_button">Create Location</button>
 
-        <select id="location_select" hidden disabled id="location" name="location">
+        <!-- Change to a previously defined location -->
+        <select id="location_select" hidden disabled name="location">
             <?php 
+            // Default location
+            echo '<option value="-1" selected disabled hidden>-- Select a location --</option>';
+
             // Retrieve all locations
             $query = "SELECT location_id, name FROM location";
             $result = mysqli_query($conn, $query);
             while ($a = mysqli_fetch_assoc($result)) {
                 echo '<option value="'.$a['location_id'].'"
-                '.($a['location_id'] == $e->location['location_id'])?"selected":"".'>
-                '.$a['location_name'].'</option';
+                '.((isset($e) && $a['location_id'] == $e->location['location_id'])?"selected":"").'>
+                '.(isset($a['name'])?$a['name']:"Unnamed Location").'</option>';
             }
             ?>
         </select>
         <button type="button" hidden disabled id="cancel_location_select">Cancel</button>
         
+        <!-- Edit current location, or create new one -->
         <fieldset hidden disabled id="edit_location">
             <input type="hidden" name="location_id" 
             value="<?=isset($e)?$e->location['location_id']:-1?>">
+
+            <label for="location_name">Location Name</label>
+            <input type="text" name="location_name" id="location_name"
+                value="<?=(isset($e))?$e->location['name']:""?>">
 
             <label for="location_address">Address</label>
             <input type="text" name="location_address" id="location_address"
@@ -208,56 +318,9 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
 
         <!-- Client -->
         <label for="client">Client</label>
-        <input type="text" id="Client" value="<?=isset($e)?$e->client_name:""?>">
+        <input type="text" id="client" name="client" value="<?=isset($e)?$e->client_name:""?>">
 
-        <!-- Areas -->
-        <fieldset>
-            <legend>Areas</legend>
-
-            <?php
-            // If the user is a facilitator or an admin,
-            // they can select the areas that either are already on the event,
-            // or that they have
-            $areas;
-
-            // Areas of the user
-            foreach ($user_areas as $a) {
-                $areas[] = $a;
-            }
-
-            // If owner, do all areas
-            if ($_SESSION['role'] == 'Owner') {
-                $query = "SELECT area_id, area_name FROM area";
-                $result = mysqli_query($conn, $query);
-
-                while ($aa = mysqli_fetch_assoc($result)) {
-                    $a = ["area_id" => $aa['area_id'],
-                        "area_name" => $aa['area_name']];
-                    if (!in_array($a, $areas)) {
-                        $areas[] = $a;
-                    }
-                }
-            }
-
-            // Areas of the event
-            if (isset($e)) {
-                foreach($e->areas as $a) {
-                    if (!in_array($a, $areas)) {
-                        $areas[] = $a;
-                    }
-                }
-            }
-
-            // Add all the areas to the checklist
-            foreach ($areas as $a) {
-                echo '<input type="checkbox" id="area'.$a['area_id'].'" 
-                    name="area" value="'.$a['area_id'].'">';
-                echo '<label for="area'.$a['area_id'].'">'.
-                    $a['area_name'].'</label>';
-            }
-            ?>
-        </fieldset>
-
+        <!--Document -->
         <p>Placeholder for document upload</p>
         <?php
 
@@ -268,9 +331,10 @@ if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
         } 
         else {
             echo '<p class="session">No session</p>';
-            echo '<button type="button" id="new_session">Create a session</a>';
+            echo '<button type="button" id="new_session">Create a session</button>';
         }
-        echo '<button type="submit">Save</button>';
+        echo '<p hidden id="error"></p>';
+        echo '<button type="submit" id="submit_event_changes">Save</button>';
 
     echo "</form>";
 }
@@ -358,11 +422,11 @@ else {
                 $e->location['address']."\n".$e->location['city'].", ".
                 $e->location['state']." ".$e->location['zip_code']?>
             </p>
-            <p class="client_name">Client: <?=$e->client_name?></p>
+            <p class="client_name">Client: <?=isset($e->client_name)?$e->client_name:"No client name"?></p>
             <p class="areas"><?php
                 $s = "";
                 foreach ($e->areas as $a) {
-                    $s .= ", ".$a['area_name'];
+                    $s .= $a['area_name'].", ";
                 }
                 echo $s;
             ?></p>
