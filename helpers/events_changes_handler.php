@@ -1,8 +1,26 @@
 <?php
 // Chloe Wist, Ethan Janssen, Hazel Lim, Jonathan Smith
-// Handles changes saved for an event
+// Handles creating, deleting, and editing events
 
-if (isset($_POST['event_id'])) {
+// Deleting event
+if (isset($_GET['event_id']) && isset($_GET['delete_event'])) {
+    try {
+        // Delete from event_to_area
+        $query = "DELETE FROM event_to_area WHERE event_id = ".$_GET['event_id'];
+        mysqli_query($conn, $query);
+
+        $query = "DELETE FROM event WHERE event_id = ".$_GET['event_id'];
+        mysqli_query($conn, $query);
+
+        echo '<p class="success">Deleted event</p>';
+    }
+    catch (Exception $e) {
+        echo '<p class="fail">Failed to delete event</p>';
+    }
+}
+
+// Creating and editing events
+else if (isset($_POST['event_id'])) {
     // Save all data in variables
     $event_id = trim(htmlspecialchars($_POST["event_id"]));
     $event_name = trim(htmlspecialchars($_POST["event_name"]));

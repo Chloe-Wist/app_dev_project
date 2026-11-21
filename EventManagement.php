@@ -19,9 +19,6 @@ if ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Owner'
 // Connects to the database
 require("helpers/config.php"); 
 
-// If an event was edited, handle the edits
-require("helpers/events_changes_handler.php");
-
 
 // Get user areas
 // If the user is an owner, return all areas. Otherwise get the areas 
@@ -67,8 +64,13 @@ include("helpers/header.php");
 require("helpers/events.php");
 
 
+// If an event was edited, handle the edits
+require("helpers/events_changes_handler.php");
+
+
 // If the user wants to create an event or to edit an event
-if (isset($_GET['event_id']) || isset($_GET['new_event'])) {
+if ((isset($_GET['event_id']) || isset($_GET['new_event']))
+        && !isset($_GET['delete_event'])) {
     // Retrieve information on the event
     if (isset($_GET['event_id'])) {
         $e = new Events($_GET['event_id']);
@@ -467,6 +469,9 @@ else {
             else {
                 echo '<a href="eventManagement.php?event_id='.$e->id.'" class="eventEditor">Edit Event</a>';
             }
+
+            // Delete button
+            echo '<a href="eventManagement.php?event_id='.$e->id.'&delete_event=true">Delete Event</a>';
             ?>
         </div>
     <?php 
