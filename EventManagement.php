@@ -45,7 +45,6 @@ if (!isset($user_areas)) {
                     'area_name' => 'No user areas'];
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -66,7 +65,6 @@ require("helpers/events.php");
 
 // If an event was edited, handle the edits
 require("helpers/events_changes_handler.php");
-
 
 // If the user wants to create an event or to edit an event
 if ((isset($_GET['event_id']) || isset($_GET['new_event']))
@@ -362,10 +360,14 @@ else {
 
     // Query to select all events
     if (isset($_GET['past_events'])) { 
-        $query = "SELECT event_id FROM event WHERE event_date < CURDATE()";
+        $query = "SELECT event.event_id FROM event 
+            JOIN event_to_area ON event.event_id = event_to_area.event_id
+            WHERE event_date < CURDATE()";
     }
     else {
-        $query = "SELECT event_id FROM event WHERE event_date >= CURDATE()";
+        $query = "SELECT event.event_id FROM event 
+            JOIN event_to_area ON event.event_id = event_to_area.event_id
+            WHERE event_date >= CURDATE()";
     }
 
     // If the user does not want to display all events
@@ -378,17 +380,17 @@ else {
         // If admin they see all events in their area
         else if ($_SESSION['role'] == 'Admin') {
             // For if the admin is managing an event outside their area
-            $query .= " OR manager_id = ".$_SESSION['user_id'];
+            $query .= " AND (manager_id = ".$_SESSION['user_id'];
 
             if (isset($user_areas)) {
                 // First area
-                $query .= " AND (area_id = ".$user_areas[0]['area_id'];
+                $query .= " OR (area_id = ".$user_areas[0]['area_id'];
 
                 // Other areas
                 for ($i = 1; $i < count($user_areas); $i++) {
                     $query .= " OR area_id = ".$user_areas[$i]['area_id'];
                 }
-                $query .= ")";
+                $query .= "))";
             }
             else {
                 echo '<p class="fail">Failed to find user areas</p>';
@@ -397,6 +399,7 @@ else {
 
         }
     }
+
     // Run query
     $result = mysqli_query($conn, $query);
 
@@ -448,6 +451,46 @@ else {
             else {
                 echo '<p class="session">No session</p>';
             }
+
+            // Show RSVPs
+            $query = "SELECT status FROM event_signup WHERE event_id = ".$e->id;
+
+            try {
+                // Retrieve RSVPs
+                $result = mysqli_query($conn, $query);
+
+                $rsvp = ['Yes' => 0,'Maybe' => 0,'No' => 0,'No Reply' => 0];
+                while ($a = mysqli_fetch_assoc($result)) {
+                    if ($a['status'] == "Yes") {
+                        $rsvp["Yes"]++;
+                    }
+                    else if ($a['status'] == "Maybe") {
+                        $rsvp["Maybe"]++;
+                    }
+                    else if ($a['status'] == "No") {
+                        $rsvp["No"]++;
+                    }
+                    else {
+                        $rsvp["No Reply"]++;
+                    }
+                }
+
+                // Display RSVPs
+                ?>
+                <div id="rsvp">
+                    <p>Yes: <?=$rsvp['Yes']?></p>
+                    <p>Maybe: <?=$rsvp['Maybe']?></p>
+                    <p>No: <?=$rsvp['No']?></p>
+                    <p>No Reply: <?=$rsvp['No Reply']?></p>
+                </div>
+                <?php
+            }
+            catch (Exception $e) {
+                echo '<p class="fail">Failed to retrieve RSVPs</p>';
+            }
+
+            // Manage volunteers
+            echo '<a href="manageEventVolunteers.php?event_id='.$e->id.'">Manage Volunteers</a>';
             
             // Editing button
             // If facilitator
@@ -458,10 +501,12 @@ else {
             }
             // If admin
             else if ($_SESSION['role'] == 'Admin') {
-                foreach ($user_areas as $a) {
-                    if ($e->area['area_id'] == $a['area_id']) {
-                        echo '<a href="eventManagement.php?event_id='.$e->id.'" class="eventEditor">Edit Event</a>';
-                        break;
+                foreach ($user_areas as $u_area) {
+                    foreach($e->areas as $e_area) {
+                        if ($e_area['area_id'] == $u_area['area_id']) {
+                            echo '<a href="eventManagement.php?event_id='.$e->id.'" class="eventEditor">Edit Event</a>';
+                            break;
+                        }
                     }
                 }
             }
