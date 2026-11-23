@@ -162,7 +162,7 @@ $story_list = [];
         try {
             $conn->begin_transaction();
 
-            $stmt = $conn->prepare("UPDATE Simulation SET Simulation_Description = ? WHERE Simulation_ID = ?");
+            // $stmt = $conn->prepare("UPDATE Simulation SET Simulation_Description = ? WHERE Simulation_ID = ?");
             
             $stmt = $conn->prepare("UPDATE Version SET Is_Published = ? WHERE Simulation_ID = ?");
             $stmt->bind_param("si", $published, $id);
@@ -222,8 +222,16 @@ $story_list = [];
         if ($story_id !== 'cancel') {
             $story_id = (int) $story_id;
 
+            $stmt = $conn->prepare("SELECT COUNT(*) AS n FROM Simulation_to_Session WHERE Simulation_ID = ?");
+            $stmt->bind_param("i", $story_id);
+            $stmt->execute();
+            $in_use = (int) $stmt->get_result()->fetch_assoc()['n'];
+            $stmt->close();
+
             if (!simulation_exists($conn, $story_id)) {
                 echo "<p class='fail'>Failed to Delete Story</p>";
+            } elseif ($in_use > 0) {
+                echo "<p class='fail'>This simulation is hosted by $in_use session(s). Delete those sessions or switch them to another simulation first.</p>";
             } else {
                 try {
                     $conn->begin_transaction();
