@@ -6,6 +6,7 @@
  * that allows users to enter details about themselves before entering the simulation.
  * 
  * TODO: Add instructions for the simulation
+ * TODO: Prevent duplicate analytics records from repeated survey submissions
 */
 
 // Starts a PHP session

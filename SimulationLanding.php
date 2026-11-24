@@ -59,6 +59,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Stores the valid session for use on following simulation pages
             $_SESSION["session_id"] = $session["Session_ID"];
 
+            // Clears the previously selected simulation version
+            unset($_SESSION["version_id"]);
+
             header("Location: InfoSurvey.php");
             exit();
         }
