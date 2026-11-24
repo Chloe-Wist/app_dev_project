@@ -221,7 +221,8 @@ if ((isset($_GET['event_id']) || isset($_GET['new_event']))
             // Actual options
             foreach ($possible_managers as $p) {
                 echo('<option value="'.$p['manager_id'].'" 
-                '.((isset($e) && $p['manager_id'] == $e->manager_id['user_id'])?"selected":"").'>
+                '.(((isset($e) && $p['manager_id'] == $e->manager_id['user_id']) ||
+                    !isset($e) && $p['manager_id'] == $_SESSION['user_id'])?"selected":"").'>
                 '.$p['name'].' ('.
                 ($p['area_matches']?"Area Matches":"No Matching Areas").')</option>');
             }

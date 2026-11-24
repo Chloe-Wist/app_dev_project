@@ -139,6 +139,7 @@ $story_list = [];
         <title>User Stories</title>
                 <link rel="stylesheet" href="styles/navbar.css">
                 <link rel="stylesheet" href="styles/main.css">
+                <link rel="stylesheet" href="styles/simulationManagement.css">
     </head>
     <body>
 
