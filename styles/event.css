@@ -1,0 +1,121 @@
+/* Back to Events link */
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    padding: 8px 14px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    color: #203858;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.back-link:visited {
+    color: #203858;
+}
+
+.back-link:hover {
+    background-color: #e2e8f0;
+}
+
+/* Event title */
+.event-title {
+    font-size: 26px;
+    text-align: center;
+    margin: 15px 0 25px;
+}
+
+/* RSVP section */
+.event-response {
+    padding: 15px 0 20px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
+.event-response p {
+    font-size: 14px;
+    margin: 0 0 10px;
+}
+
+/* RSVP button group */
+.event-response form {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+.event-response button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background-color: #f5f5f5;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.event-response button + button {
+    border-left: 1px solid #ccc;
+}
+
+/* RSVP button text colors */
+.event-response button[value="Yes"] {
+    color: #287d46;
+}
+
+.event-response button[value="Maybe"] {
+    color: #916500;
+}
+
+.event-response button[value="No"] {
+    color: #b83b3b;
+}
+
+/* Selected RSVP button colors */
+.event-response button[value="Yes"].selected {
+    background-color: #287d46;
+    color: #fff;
+}
+
+.event-response button[value="Maybe"].selected {
+    background-color: #f2c94c;
+    color: #333;
+}
+
+.event-response button[value="No"].selected {
+    background-color: #b83b3b;
+    color: #fff;
+}
+
+/* RSVP hover effect */
+.event-response button:hover {
+    filter: brightness(0.92);
+}
+
+/* Event details */
+.event-details {
+    padding: 20px 0;
+}
+
+.event-details p {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 12px 0;
+}
+
+.event-details h2 {
+    font-size: 18px;
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+    margin-top: 25px;
+}
+
+.event-details a {
+    color: #35658c;
+}

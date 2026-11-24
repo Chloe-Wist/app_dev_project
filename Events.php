@@ -202,8 +202,13 @@ $result = $stmt->get_result();
                                 </p>
                             </div>
 
-                            <div class="event-rsvp">
-                                <?php echo htmlspecialchars($event["Status"] ?? "No Reply"); ?>
+                            <?php
+                            // Gets the user's RSVP status
+                            $status = $event["Status"] ?? "No Reply";
+                            ?>
+
+                            <div class="event-rsvp" data-status="<?php echo htmlspecialchars($status); ?>">
+                                <?php echo htmlspecialchars($status); ?>
                             </div>
 
                         </a>

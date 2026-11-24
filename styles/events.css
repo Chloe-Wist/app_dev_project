@@ -79,7 +79,32 @@
 
 /* RSVP section */
 .event-rsvp {
-    min-width: 80px;
+    width: 80px;
+    flex-shrink: 0;
+    padding: 6px 0;
+    border-radius: 20px;
     text-align: center;
     font-size: 14px;
+    font-weight: bold;
+}
+
+/* RSVP status colors */
+.event-rsvp[data-status="Yes"] {
+    background-color: #287d46;
+    color: #fff;
+}
+
+.event-rsvp[data-status="Maybe"] {
+    background-color: #f2c94c;
+    color: #333;
+}
+
+.event-rsvp[data-status="No"] {
+    background-color: #b83b3b;
+    color: #fff;
+}
+
+.event-rsvp[data-status="No Reply"] {
+    background-color: #e2e8f0;
+    color: #555;
 }

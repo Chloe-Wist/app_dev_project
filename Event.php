@@ -145,10 +145,46 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <div class="page">
         <main>
-            <a href="Events.php">Back to Events</a>
+            <a href="Events.php" class="back-link">Back to Events</a>
+
+            <h1 class="event-title">
+                <?php echo htmlspecialchars($event["Event_Name"]); ?>
+            </h1>
+
+                <section class="event-response">
+                    <?php if (!$is_past) { ?>
+                        <p>Are you going?</p>
+
+                        <form method="POST">
+                            <input type="hidden" name="csrf_token"
+                                value="<?php echo htmlspecialchars($_SESSION["csrf_token"]); ?>">
+
+                            <button type="submit" name="status" value="Yes"
+                                class="<?php echo ($status === 'Yes') ? 'selected' : ''; ?>">
+                                Yes
+                            </button>
+
+                            <button type="submit" name="status" value="Maybe"
+                                class="<?php echo ($status === 'Maybe') ? 'selected' : ''; ?>">
+                                Maybe
+                            </button>
+
+                            <button type="submit" name="status" value="No"
+                                class="<?php echo ($status === 'No') ? 'selected' : ''; ?>">
+                                No
+                            </button>
+                        </form>
+                    <?php } else { ?>
+                        <p>
+                            <strong>Response:</strong>
+                            <?php echo htmlspecialchars($status); ?>
+                        </p>
+
+                        <p>This event has ended. RSVPs can no longer be changed.</p>
+                    <?php } ?>
+                </section>
 
             <section class="event-details">
-                <h1><?php echo htmlspecialchars($event["Event_Name"]); ?></h1>
 
                 <p>
                     <strong>Date:</strong>
@@ -179,28 +215,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <p>
                     <?php echo htmlspecialchars($event["Event_Description"]); ?>
                 </p>
-            </section>
-
-            <section class="event-response">
-                <h2>RSVP</h2>
-
-                <p>
-                    <strong>Current response:</strong>
-                    <?php echo htmlspecialchars($status); ?>
-                </p>
-
-                <?php if (!$is_past) { ?>
-                    <form method="POST">
-                        <input type="hidden" name="csrf_token"
-                            value="<?php echo htmlspecialchars($_SESSION["csrf_token"]); ?>">
-
-                        <button type="submit" name="status" value="Yes">Yes</button>
-                        <button type="submit" name="status" value="Maybe">Maybe</button>
-                        <button type="submit" name="status" value="No">No</button>
-                    </form>
-                <?php } else { ?>
-                    <p>This event has ended. RSVPs can no longer be changed.</p>
-                <?php } ?>
             </section>
         </main>
     </div>
