@@ -9,6 +9,9 @@
 // Connects to database
 require_once "helpers/config.php";
 
+// Includes CSRF token functions
+require_once "helpers/csrf.php";
+
 // Starts a PHP session if one has not already been started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -24,6 +27,10 @@ $message = "";
 
 // Processes availability changes when a form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Validates the submitted CSRF token
+    validate_csrf_token($_POST["csrf_token"] ?? "");
+
     $userID = $_SESSION["user_id"];
 
     // Adds a new availability period
@@ -162,6 +169,9 @@ $availability->close();
             <?php endif; ?>
 
             <form method="POST" action="Availability.php">
+                <input type="hidden" name="csrf_token"
+                    value="<?php echo htmlspecialchars(get_csrf_token()); ?>">
+                    
                 <input type="hidden" name="action" value="add">
                 <label for="day">Day</label>
                 <select id="day" name="day" required>
@@ -223,6 +233,9 @@ $availability->close();
                                 </td>
                                 <td>
                                     <form method="POST" action="Availability.php">
+                                        <input type="hidden" name="csrf_token"
+                                            value="<?php echo htmlspecialchars(get_csrf_token()); ?>">
+
                                         <input type="hidden" name="action" value="delete">
                                         <input
                                             type="hidden"

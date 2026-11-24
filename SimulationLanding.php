@@ -8,12 +8,7 @@
  * TODO: Add external access request form URL
  * TODO: Add header and footer from HIL website
  * TODO: Implement lockout mechanism properly (see commented-out code below)
- * TODO: Figure out timezones
 */
-
-// Sets the timezone used for date and time operations
-// TODO: Figure out timezones
-date_default_timezone_set("America/New_York"); // use the timezone your session times are entered in
 
 // Configures and starts a PHP session
 session_set_cookie_params([

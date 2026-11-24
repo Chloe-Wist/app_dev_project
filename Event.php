@@ -11,6 +11,9 @@
 // Connects to database
 require_once "helpers/config.php";
 
+// Includes CSRF token functions
+require_once "helpers/csrf.php";
+
 // Starts a PHP session if one has not already been started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -78,22 +81,11 @@ $address_url = "https://www.google.com/search?q=" . urlencode($address);
 // Gets the user's current RSVP status
 $status = $event["Status"] ?? "No Reply";
 
-// Generates a CSRF token for the RSVP form
-if (!isset($_SESSION["csrf_token"])) {
-    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
-}
-
 // Handles RSVP submissions
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Validates the submitted CSRF token
-    $submitted_token = $_POST["csrf_token"] ?? "";
-
-    if (!is_string($submitted_token) ||
-        !hash_equals($_SESSION["csrf_token"], $submitted_token)) {
-        http_response_code(403);
-        exit("Invalid CSRF token.");
-    }
+    validate_csrf_token($_POST["csrf_token"] ?? "");
 
     // Prevents RSVP changes for past events
     if ($is_past) {
@@ -157,7 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <form method="POST">
                             <input type="hidden" name="csrf_token"
-                                value="<?php echo htmlspecialchars($_SESSION["csrf_token"]); ?>">
+                                value="<?php echo htmlspecialchars(get_csrf_token()); ?>">
 
                             <button type="submit" name="status" value="Yes"
                                 class="<?php echo ($status === 'Yes') ? 'selected' : ''; ?>">

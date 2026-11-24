@@ -14,8 +14,35 @@ session_start();
 // Connects to database
 require_once "helpers/config.php";
 
+// Includes CSRF token functions
+require_once "helpers/csrf.php";
+
 // Redirects viewer if they did not enter through a valid session
 if (!isset($_SESSION["session_id"])) {
+    header("Location: SimulationLanding.php");
+    exit();
+}
+
+// Checks whether the viewer's session is still active
+$sessions = $conn->prepare(
+    "SELECT Session_ID
+     FROM Sessions
+     WHERE Session_ID = ?
+        AND Start_Date_Time <= NOW()
+        AND End_Date_Time >= NOW()"
+);
+
+$sessions->bind_param("i", $_SESSION["session_id"]);
+$sessions->execute();
+
+$sessionResults = $sessions->get_result();
+$sessions->close();
+
+// Redirects viewer if the session is no longer active
+if ($sessionResults->num_rows == 0) {
+    unset($_SESSION["session_id"]);
+    unset($_SESSION["version_id"]);
+
     header("Location: SimulationLanding.php");
     exit();
 }
@@ -24,6 +51,10 @@ $message = "";
 
 // Processes the viewer's information when the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Validates the submitted CSRF token
+    validate_csrf_token($_POST["csrf_token"] ?? "");
+
     $firstName = trim($_POST["first_name"]);
     $lastName = trim($_POST["last_name"]);
     $email = trim($_POST["email"]);
@@ -151,6 +182,9 @@ $languageResults = $languages->get_result();
             <?php endif; ?>
 
             <form method="POST" action="InfoSurvey.php">
+
+                <input type="hidden" name="csrf_token"
+                    value="<?php echo htmlspecialchars(get_csrf_token()); ?>">
 
                 <label for="first-name">First Name</label>
                 <input
