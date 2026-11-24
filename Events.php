@@ -4,11 +4,6 @@
  *
  * This file will create the events page that allows users
  * to browse events and view and edit their RSVP statuses.
- *
- * TODO: Link each event to Event.php for details and RSVP
- * TODO: Ensure past events are view-only
- * TODO: Make address clickable and open a Google search for the address
- * TODO: Integrate notifications to event overseer when RSVP changes to No
  */
 
 // Connects to database
@@ -176,7 +171,8 @@ $result = $stmt->get_result();
                         $start_time = date("g:i A", strtotime($event["Start_Time"]));
                         $end_time = date("g:i A", strtotime($event["End_Time"]));
                         ?>
-                        <div class="event-card">
+                        <a class="event-card"
+                            href="Event.php?event_id=<?php echo $event["Event_ID"]; ?>">
 
                             <div class="event-date">
                                 <span class="event-month">
@@ -210,7 +206,7 @@ $result = $stmt->get_result();
                                 <?php echo htmlspecialchars($event["Status"] ?? "No Reply"); ?>
                             </div>
 
-                        </div>
+                        </a>
                         <?php
                     }
                 } else {

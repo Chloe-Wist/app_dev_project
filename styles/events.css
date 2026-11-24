@@ -34,6 +34,12 @@
     gap: 20px;
     padding: 15px 10px;
     border-bottom: 1px solid #ccc;
+    text-decoration: none;
+    color: inherit;
+}
+
+.event-card:hover {
+    background-color: #f0f0f0;
 }
 
 /* Date section */
