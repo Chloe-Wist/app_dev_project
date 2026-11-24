@@ -1,0 +1,241 @@
+/* ===== Event Management page ===== */
+/* Generated with Claude */
+
+/* Filter links (Show All Events / Past Events) */
+#show_all_events,
+#show_past_events,
+#show_user_events {
+    display: inline-block;
+    margin: 24px 12px 0 0;
+    padding: 10px 18px;
+    border: 1px solid #d1d9e6;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #315da8;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+#show_all_events:hover,
+#show_past_events:hover {
+    background-color: #f0f5ff;
+    border-color: #a9bfdf;
+}
+
+#show_all_events:active,
+#show_past_events:active {
+    transform: scale(0.98);
+}
+
+/* Event list: responsive card grid */
+#event_list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+/* Event card */
+.event {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 28px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 35px rgba(36, 48, 71, 0.12);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(36, 48, 71, 0.16);
+}
+
+.event p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Event title */
+.event_name {
+    margin: 0 0 4px;
+    color: #243b63;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+.description {
+    color: #5b6678;
+}
+
+/* Date and time row */
+.Date,
+.Start-Time,
+.End-Time {
+    display: inline-block;
+    font-weight: 600;
+    color: #315da8;
+}
+
+.event .Date {
+    margin-top: 10px;
+}
+
+.Date {
+    padding: 4px 10px;
+    margin-right: 6px;
+    border-radius: 999px;
+    background-color: #eaf2ff;
+}
+
+.Start-Time::after {
+    content: " \2013";
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+/* Manager / client / location */
+.Manager,
+.client_name {
+    font-size: 14px;
+    color: #374151;
+}
+
+.location {
+    white-space: pre-line;     /* keep the address line breaks */
+    font-size: 14px;
+    color: #5b6678;
+}
+
+/* Areas as a subtle tag line */
+.areas {
+    padding: 8px 12px;
+    border: 1px solid #e1e8f2;
+    border-radius: 8px;
+    background-color: #f9fafc;
+    font-size: 13px;
+    font-weight: 600;
+    color: #315da8;
+}
+
+.session {
+    font-size: 13px;
+    font-style: italic;
+    color: #9ca3af;
+}
+
+.documents:empty {
+    display: none;
+}
+
+/* RSVP counts */
+.rsvp {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 12px 0 8px;
+}
+
+.rsvp p {
+    padding: 8px 4px;
+    border: 1px solid #e1e8f2;
+    border-radius: 8px;
+    background-color: #f9fafc;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Action links on each card */
+.event > a {
+    display: block;
+    margin-top: 8px;
+    padding: 10px 14px;
+    border: 1px solid #d1d9e6;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #315da8;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.event > a:hover {
+    background-color: #f0f5ff;
+    border-color: #a9bfdf;
+}
+
+.event > a:active {
+    transform: scale(0.98);
+}
+
+/* Primary action: Manage Volunteers */
+.manage_volunteers {
+    margin-top: 14px;
+    border: none;
+    background-color: #315da8;
+    color: #ffffff;
+}
+
+.manage_volunteers:hover {
+    background-color: #254982;
+}
+
+/* Destructive action: Delete Event */
+.delete_events {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+.delete_events:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+}
+
+/* Create New Event button */
+#create_event {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 24px;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: #315da8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+#create_event:hover {
+    background-color: #254982;
+}
+
+#create_event:active {
+    transform: scale(0.98);
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+    #event_list {
+        grid-template-columns: 1fr;
+    }
+
+    .event {
+        padding: 20px;
+    }
+}

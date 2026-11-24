@@ -1,0 +1,295 @@
+/* ===== Manage Event Volunteers page ===== */
+/* Created with Claude */
+
+/* Hidden + disabled elements.
+   [hidden] always wins over the display rules below, so these stay hidden
+   until JavaScript reveals them. To reveal, remove BOTH attributes, e.g.
+   el.hidden = false; el.disabled = false;  (or removeAttribute) */
+[hidden],
+button[hidden],
+form[hidden],
+fieldset[hidden] {
+    display: none !important;
+}
+
+/* Disabled elements can't be clicked or focused with the mouse */
+[disabled],
+fieldset:disabled {
+    pointer-events: none;
+}
+
+/* Disabled fieldsets (RSVP lists): dimmed and inert once shown while disabled */
+fieldset:disabled {
+    opacity: 0.6;
+}
+
+fieldset:disabled input,
+fieldset:disabled button {
+    cursor: not-allowed;
+}
+
+/* Page heading (event name) */
+h1 {
+    margin-top: 28px;
+}
+
+/* Return link */
+body > a[href*="EventManagement"],
+body > a[href*="eventManagement"] {
+    display: block;
+    width: fit-content;
+    margin: -8px auto 20px;
+    padding: 10px 22px;
+    border: 2px solid #315da8;
+    border-radius: 8px;
+    background-color: #315da8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(49, 93, 168, 0.25);
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+body > a[href*="EventManagement"]::before,
+body > a[href*="eventManagement"]::before {
+    content: "\2190  ";
+}
+
+body > a[href*="EventManagement"]:hover,
+body > a[href*="eventManagement"]:hover {
+    background-color: #254982;
+    border-color: #254982;
+}
+
+body > a[href*="EventManagement"]:active,
+body > a[href*="eventManagement"]:active {
+    transform: scale(0.98);
+}
+
+/* Areas: plain text label, not a button */
+.areas {
+    margin: 0 0 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    color: #5b6678;
+}
+
+.areas::before {
+    content: "Areas: ";
+    font-weight: 600;
+    color: #243b63;
+}
+
+/* ---------- Buttons (general) ---------- */
+button {
+    padding: 10px 16px;
+    border: 1px solid #d1d9e6;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #315da8;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+button:hover:not(:disabled) {
+    background-color: #f0f5ff;
+    border-color: #a9bfdf;
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---------- RSVP summary buttons ---------- */
+#rsvp {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+#rsvp button {
+    min-width: 120px;
+    padding: 12px 18px;
+    background-color: #ffffff;
+    box-shadow: 0 3px 12px rgba(36, 48, 71, 0.08);
+}
+
+/* ---------- Invite section ---------- */
+#invite_section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 35px rgba(36, 48, 71, 0.12);
+}
+
+/* Filter buttons row */
+#invite_section > button {
+    margin: 0 8px 12px 0;
+}
+
+#list_users {
+    margin-top: 12px;
+}
+
+/* User list: responsive grid of cards */
+#invite {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+/* User card (user01 = area matches, user00 = no match) */
+.user00,
+.user01 {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 10px;
+    row-gap: 4px;
+    align-items: center;
+    padding: 18px;
+    border: 1px solid #e1e8f2;
+    border-left: 4px solid #d1d9e6;
+    border-radius: 12px;
+    background-color: #f9fafc;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.user01 {
+    border-left-color: #4776c5;
+}
+
+.user00:hover,
+.user01:hover {
+    background-color: #ffffff;
+    box-shadow: 0 6px 18px rgba(36, 48, 71, 0.1);
+}
+
+.user00 p,
+.user01 p {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.name {
+    font-size: 17px !important;
+    font-weight: 600;
+    color: #243b63;
+}
+
+.role {
+    width: fit-content;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background-color: #eaf2ff;
+    font-size: 12px !important;
+    font-weight: 600;
+    color: #315da8;
+}
+
+.availability_matches,
+.area_matches {
+    color: #5b6678;
+}
+
+/* Checkbox + label (override global "form input" width/padding) */
+.user00 input[type="checkbox"],
+.user01 input[type="checkbox"] {
+    grid-column: 1;
+    width: 18px;
+    height: 18px;
+    margin: 10px 0 0;
+    padding: 0;
+    accent-color: #315da8;
+    cursor: pointer;
+}
+
+.user00 label,
+.user01 label {
+    grid-column: 2;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+}
+
+/* Invite submit button (primary) */
+#invite > button {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: 400px;
+    margin: 12px auto 0;
+    padding: 12px 16px;
+    border: none;
+    background-color: #315da8;
+    color: #ffffff;
+    font-size: 15px;
+}
+
+#invite > button:hover:not(:disabled) {
+    background-color: #254982;
+}
+
+/* ---------- Return to invitation page ---------- */
+#return_to_invite {
+    display: block;
+    margin: 0 auto 20px;
+}
+
+/* ---------- RSVP lists (remove users) ---------- */
+#remove_user {
+    max-width: 1100px;
+    margin: 20px auto 0;
+}
+
+#remove_user fieldset {
+    margin: 0;
+    padding: 24px;
+    border: none;
+    border-radius: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 10px 35px rgba(36, 48, 71, 0.12);
+}
+
+.empty_rsvp {
+    margin: 0;
+    font-size: 15px;
+    font-style: italic;
+    color: #9ca3af;
+    text-align: center;
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+    #invite_section {
+        padding: 18px;
+    }
+
+    #invite_section > button {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+    }
+
+    #rsvp button {
+        flex: 1 1 calc(50% - 12px);
+        min-width: 0;
+    }
+}

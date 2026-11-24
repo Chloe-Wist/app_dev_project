@@ -53,6 +53,7 @@ if (!isset($user_areas)) {
 <head>
     <title>Event Volunteer Management</title>
     <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/manageEventVolunteers.css">
     <script src="scripts/manageEventVolunteers.js"></script>
 </head>
 <body>

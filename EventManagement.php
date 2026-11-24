@@ -52,6 +52,7 @@ if (!isset($user_areas)) {
 <head>
     <title>Event Management</title>
     <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/eventManagement.css">
     <script src="scripts/eventManagement.js"></script>
 </head>
 <body>
@@ -477,7 +478,7 @@ else {
 
                 // Display RSVPs
                 ?>
-                <div id="rsvp">
+                <div class="rsvp">
                     <p>Yes: <?=$rsvp['Yes']?></p>
                     <p>Maybe: <?=$rsvp['Maybe']?></p>
                     <p>No: <?=$rsvp['No']?></p>
@@ -490,7 +491,7 @@ else {
             }
 
             // Manage volunteers
-            echo '<a href="manageEventVolunteers.php?event_id='.$e->id.'">Manage Volunteers</a>';
+            echo '<a class="manage_volunteers" href="manageEventVolunteers.php?event_id='.$e->id.'">Manage Volunteers</a>';
             
             // Editing button
             // If facilitator
@@ -516,7 +517,7 @@ else {
             }
 
             // Delete button
-            echo '<a href="eventManagement.php?event_id='.$e->id.'&delete_event=true">Delete Event</a>';
+            echo '<a class="delete_events" href="eventManagement.php?event_id='.$e->id.'&delete_event=true">Delete Event</a>';
             ?>
         </div>
     <?php 
