@@ -22,3 +22,58 @@
     font-weight: bold;
     border-bottom: 3px solid #000;
 }
+
+/* Calendar event list */
+.event-list {
+    margin-top: 20px;
+}
+
+.event-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Date section */
+.event-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60px;
+    flex-shrink: 0;
+}
+
+.event-month,
+.event-weekday {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.event-day {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Event information section */
+.event-info {
+    flex: 1;
+}
+
+.event-info h2 {
+    font-size: 18px;
+    margin: 0 0 5px;
+}
+
+.event-info p {
+    font-size: 14px;
+    margin: 3px 0;
+}
+
+/* RSVP section */
+.event-rsvp {
+    min-width: 80px;
+    text-align: center;
+    font-size: 14px;
+}
